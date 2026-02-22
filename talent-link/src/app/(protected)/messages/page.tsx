@@ -404,9 +404,9 @@ const MessagesPage = () => {
 
   const getFileIcon = (file: File) => {
     const type = file.type
-    if (type.startsWith('image/')) return <Image alt="Image" className="w-4 h-4" />
-    if (type.startsWith('video/')) return <Film alt="Video" className="w-4 h-4" />
-    if (type.startsWith('audio/')) return <Music alt="Audio" className="w-4 h-4" />
+    if (type.startsWith('image/')) return <Image className="w-4 h-4" />
+    if (type.startsWith('video/')) return <Film className="w-4 h-4" />
+    if (type.startsWith('audio/')) return <Music className="w-4 h-4" />
     return <FileText className="w-4 h-4" />
   }
 
