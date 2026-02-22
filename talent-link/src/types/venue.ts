@@ -1,6 +1,3 @@
-import type { User, AvatarResponse, CoverResponse } from './user'
-import type { Media, MediaListResponse } from './media'
-
 export interface VenueBasicUpdatePayload {
   display_name?: string
   brief_bio?: string

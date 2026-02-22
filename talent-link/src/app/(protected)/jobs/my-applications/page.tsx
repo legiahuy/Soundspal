@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog'
 import { useTranslations } from 'next-intl'
 import { jobService } from '@/services/jobService'
-import type { MySubmissionsResponse, MySubmissionItem, SubmissionDetailResponse } from '@/types/job'
+import type { MySubmissionItem, SubmissionDetailResponse } from '@/types/job'
 import {
   ArrowLeft,
   Briefcase,
@@ -82,19 +82,19 @@ const formatDate = (value?: string) => {
   })
 }
 
-const getStatusBadge = (status: string) => {
-  const config = statusBadgeConfig[status] || {
-    variant: 'outline' as const,
-    label: status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' '),
-    icon: <FileText className="w-3 h-3" />,
-  }
-  return (
-    <Badge variant={config.variant} className="gap-1.5">
-      {config.icon}
-      {config.label}
-    </Badge>
-  )
-}
+// const getStatusBadge = (status: string) => {
+//   const config = statusBadgeConfig[status] || {
+//     variant: 'outline' as const,
+//     label: status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' '),
+//     icon: <FileText className="w-3 h-3" />,
+//   }
+//   return (
+//     <Badge variant={config.variant} className="gap-1.5">
+//       {config.icon}
+//       {config.label}
+//     </Badge>
+//   )
+// }
 
 const MyApplicationsPage = () => {
   const router = useRouter()
@@ -135,7 +135,7 @@ const MyApplicationsPage = () => {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     fetchSubmissions()
@@ -197,13 +197,9 @@ const MyApplicationsPage = () => {
         <div className="relative mx-auto w-full max-w-[1320px] px-4 md:px-6 z-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-3 text-foreground">
-              <p className="text-sm uppercase tracking-wider text-muted-foreground">
-                {t('title')}
-              </p>
+              <p className="text-sm uppercase tracking-wider text-muted-foreground">{t('title')}</p>
               <h1 className="text-3xl md:text-4xl font-semibold">{t('title')}</h1>
-              <p className="text-muted-foreground max-w-2xl">
-                {t('subtitle')}
-              </p>
+              <p className="text-muted-foreground max-w-2xl">{t('subtitle')}</p>
             </div>
           </div>
         </div>
@@ -332,11 +328,16 @@ const MyApplicationsPage = () => {
                                 <div className="flex items-center gap-3 mt-2">
                                   {getStatusBadgeLocal(submission.status)}
                                   <span className="text-xs text-muted-foreground">
-                                    {tDetail('postedOn', { date: formatDate(submission.created_at) })}
+                                    {tDetail('postedOn', {
+                                      date: formatDate(submission.created_at),
+                                    })}
                                   </span>
                                   {submission.reviewed_at && (
                                     <span className="text-xs text-muted-foreground">
-                                      • {tDetail('updatedOn', { timeAgo: formatDate(submission.reviewed_at) })}
+                                      •{' '}
+                                      {tDetail('updatedOn', {
+                                        timeAgo: formatDate(submission.reviewed_at),
+                                      })}
                                     </span>
                                   )}
                                 </div>
@@ -400,9 +401,7 @@ const MyApplicationsPage = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t('dialog.title')}</DialogTitle>
-            <DialogDescription>
-              {t('dialog.description')}
-            </DialogDescription>
+            <DialogDescription>{t('dialog.description')}</DialogDescription>
           </DialogHeader>
 
           {viewLoading ? (
@@ -471,9 +470,7 @@ const MyApplicationsPage = () => {
                 )}
 
               <div className="space-y-2">
-                <p className="text-xs uppercase text-muted-foreground">
-                  {t('dialog.demoFile')}
-                </p>
+                <p className="text-xs uppercase text-muted-foreground">{t('dialog.demoFile')}</p>
                 <Link
                   href={viewingSubmission.demo_file}
                   target="_blank"

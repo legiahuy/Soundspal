@@ -17,15 +17,13 @@ import { ArrowLeft, Briefcase, Eye, ExternalLink, RefreshCcw, Users, Edit } from
 type StatusFilter = 'all' | 'draft' | 'published' | 'closed'
 
 const statusBadges: Record<JobPost['status'], 'default' | 'secondary' | 'outline' | 'destructive'> =
-{
-  draft: 'secondary',
-  published: 'default',
-  closed: 'outline',
-  completed: 'outline',
-  cancelled: 'destructive',
-}
-
-
+  {
+    draft: 'secondary',
+    published: 'default',
+    closed: 'outline',
+    completed: 'outline',
+    cancelled: 'destructive',
+  }
 
 const formatDate = (value?: string) => {
   if (!value) return '—'
@@ -39,7 +37,7 @@ const formatDate = (value?: string) => {
 const MyJobPostsPage = () => {
   const router = useRouter()
   const t = useTranslations('MyPosts')
-  const tDetail = useTranslations('JobDetail')
+  // const tDetail = useTranslations('JobDetail')
   const tCommon = useTranslations('Common')
   const tOptions = useTranslations('options')
   const [jobs, setJobs] = useState<JobPost[]>([])
@@ -72,30 +70,30 @@ const MyJobPostsPage = () => {
     return jobs.filter((job) => job.status === statusFilter)
   }, [jobs, statusFilter])
 
-  const emptyState = useMemo(() => {
-    switch (statusFilter) {
-      case 'draft':
-        return {
-          title: 'No drafts yet',
-          description: 'Start a post and save it as a draft to finish later.',
-        }
-      case 'published':
-        return {
-          title: 'No published jobs',
-          description: 'Publish a job to start receiving applications from artists.',
-        }
-      case 'closed':
-        return {
-          title: 'No closed jobs',
-          description: 'Jobs you close will appear here for your records.',
-        }
-      default:
-        return {
-          title: 'No jobs here yet',
-          description: 'Post your first job to start receiving applications from artists.',
-        }
-    }
-  }, [statusFilter])
+  // const emptyState = useMemo(() => {
+  //   switch (statusFilter) {
+  //     case 'draft':
+  //       return {
+  //         title: 'No drafts yet',
+  //         description: 'Start a post and save it as a draft to finish later.',
+  //       }
+  //     case 'published':
+  //       return {
+  //         title: 'No published jobs',
+  //         description: 'Publish a job to start receiving applications from artists.',
+  //       }
+  //     case 'closed':
+  //       return {
+  //         title: 'No closed jobs',
+  //         description: 'Jobs you close will appear here for your records.',
+  //       }
+  //     default:
+  //       return {
+  //         title: 'No jobs here yet',
+  //         description: 'Post your first job to start receiving applications from artists.',
+  //       }
+  //   }
+  // }, [statusFilter])
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -191,7 +189,9 @@ const MyJobPostsPage = () => {
                     <div className="p-10 text-center space-y-4">
                       <Briefcase className="w-12 h-12 mx-auto text-muted-foreground" />
                       <div>
-                        <h3 className="text-lg font-semibold">{t(`noPosts.title`, { status: statusFilter })}</h3>
+                        <h3 className="text-lg font-semibold">
+                          {t(`noPosts.title`, { status: statusFilter })}
+                        </h3>
                         <p className="text-muted-foreground">{t('noPosts.description')}</p>
                       </div>
                       <Button asChild>
@@ -205,7 +205,9 @@ const MyJobPostsPage = () => {
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline">{tOptions(`postTypes.${job.post_type}`)}</Badge>
+                                <Badge variant="outline">
+                                  {tOptions(`postTypes.${job.post_type}`)}
+                                </Badge>
                                 {job.genres && job.genres.length > 0 && (
                                   <span className="text-xs text-muted-foreground">
                                     {job.genres.slice(0, 2).join(', ')}
@@ -223,7 +225,9 @@ const MyJobPostsPage = () => {
 
                             <div className="flex flex-wrap gap-2">
                               <Badge variant={statusBadges[job.status] ?? 'outline'}>
-                                {job.status === 'draft' ? t('tabs.drafts') : t(`tabs.${job.status}`)}
+                                {job.status === 'draft'
+                                  ? t('tabs.drafts')
+                                  : t(`tabs.${job.status}`)}
                               </Badge>
                               <Badge variant="secondary" className="capitalize">
                                 {job.recruitment_type?.replace('_', ' ') ?? 'Flexible'}

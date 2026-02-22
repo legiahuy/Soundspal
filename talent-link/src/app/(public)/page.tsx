@@ -2,12 +2,13 @@ import { getTranslations } from 'next-intl/server'
 import { landingService } from '@/services/landingService'
 import LandingPageClient, { ArtistData } from './LandingPageClient'
 import { JobPost } from '@/types/job'
-import { FeaturedUser } from '@/types/admin'
+import { FeaturedUser, FeaturedJob } from '@/types/admin'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'TalentLink - Connect with Top Talent & Opportunities',
-  description: 'Find the best artists, venues, and creative jobs. Join TalentLink today to showcase your portfolio or hire top talent.',
+  description:
+    'Find the best artists, venues, and creative jobs. Join TalentLink today to showcase your portfolio or hire top talent.',
 }
 
 export default async function LandingPage() {
@@ -35,7 +36,7 @@ export default async function LandingPage() {
     }))
 
     // Transform FeaturedJob to JobPost format
-    featuredJobs = jobs.map((job: any) => ({
+    featuredJobs = jobs.map((job: FeaturedJob) => ({
       id: job.id,
       title: job.title,
       description: job.description || '',
@@ -46,10 +47,9 @@ export default async function LandingPage() {
       visibility: job.visibility,
       creator_id: job.creator_id,
       creator_role: job.creator_role,
-      // Robust mapping for creator info - try all possible field names
-      creator_display_name: job.creatorName ?? job.creator_name ?? job.creatorDisplayName ?? job.creator_display_name ?? tCommon('unknown'),
-      creator_username: job.creatorUsername ?? job.creator_username,
-      creator_avatar: job.creatorAvatarUrl ?? job.creator_avatar_url ?? job.creatorAvatar ?? job.creator_avatar,
+      creator_display_name: job.creator_display_name || tCommon('unknown'),
+      creator_username: job.creator_username,
+      creator_avatar: job.creator_avatar_url,
       location: job.location,
       location_type: job.location_type,
       budget_min: job.budget_min,
@@ -64,18 +64,12 @@ export default async function LandingPage() {
       updated_at: job.updated_at,
       published_at: job.published_at,
       applications_count: job.total_submissions,
-      views_count: job.views_count
+      views_count: job.views_count,
     }))
-
   } catch (error) {
     console.error('Failed to fetch featured content:', error)
     // Fallback to empty arrays
   }
 
-  return (
-    <LandingPageClient 
-      artists={featuredArtists} 
-      jobs={featuredJobs} 
-    />
-  )
+  return <LandingPageClient artists={featuredArtists} jobs={featuredJobs} />
 }
