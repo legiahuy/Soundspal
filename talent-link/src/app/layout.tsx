@@ -7,6 +7,7 @@ import './globals.css'
 import { AuthInitializer } from '@/components/auth/AuthInitializer'
 import { FirebaseAnalytics } from '@/components/analytics/FirebaseAnalytics'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 import { FeedbackButton } from '@/components/common/FeedbackButton'
 
@@ -91,6 +92,7 @@ export default async function RootLayout({
           <Toaster position="top-right" richColors />
         </AuthInitializer>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

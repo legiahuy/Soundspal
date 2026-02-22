@@ -7,7 +7,21 @@ import Header from '@/components/public/Header'
 import MessageThread, { ThreadMessage } from '@/components/messages/MessageThread'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, Send, Loader2, Paperclip, X, Image, FileText, Film, Music, MoreVertical, Trash2, MessageCircle, ChevronLeft } from 'lucide-react'
+import {
+  Search,
+  Send,
+  Loader2,
+  Paperclip,
+  X,
+  Image,
+  FileText,
+  Film,
+  Music,
+  MoreVertical,
+  Trash2,
+  MessageCircle,
+  ChevronLeft,
+} from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -38,13 +52,17 @@ const MessagesPage = () => {
 
   const sortConversations = useCallback((items: Conversation[]) => {
     return [...items].sort((a, b) => {
-      const dateA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime()
-      const dateB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime()
+      const dateA = a.lastMessage
+        ? new Date(a.lastMessage.createdAt).getTime()
+        : new Date(a.updatedAt).getTime()
+      const dateB = b.lastMessage
+        ? new Date(b.lastMessage.createdAt).getTime()
+        : new Date(b.updatedAt).getTime()
       return dateB - dateA
     })
   }, [])
   const [messageInput, setMessageInput] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
+  // const [isTyping, setIsTyping] = useState(false)
   const [typingUser, setTypingUser] = useState<string | null>(null)
   const previousConversationRef = useRef<string | null>(null)
   const threadContainerRef = useRef<HTMLDivElement | null>(null)
@@ -77,10 +95,10 @@ const MessagesPage = () => {
         const updated = prev.map((conv) =>
           conv.id === message.conversationId
             ? {
-              ...conv,
-              lastMessage: message,
-              unreadCount: isActiveConversation ? 0 : (conv.unreadCount || 0) + 1,
-            }
+                ...conv,
+                lastMessage: message,
+                unreadCount: isActiveConversation ? 0 : (conv.unreadCount || 0) + 1,
+              }
             : conv,
         )
         return sortConversations(updated)
@@ -111,7 +129,8 @@ const MessagesPage = () => {
           id: 'other-user-1',
           username: 'acoustic_cafe',
           displayName: 'Acoustic Cafe & Bar',
-          avatarUrl: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=100&h=100&fit=crop',
+          avatarUrl:
+            'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=100&h=100&fit=crop',
         },
       ],
       lastMessage: {
@@ -135,7 +154,8 @@ const MessagesPage = () => {
           id: 'other-user-2',
           username: 'minhtam',
           displayName: 'Minh Tam (Artist)',
-          avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
+          avatarUrl:
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
         },
       ],
       lastMessage: {
@@ -212,11 +232,11 @@ const MessagesPage = () => {
     const fetchConversations = async () => {
       try {
         setLoadingConversations(true)
-        if (USE_MOCK_DATA) {
-          setConversations(mockConversations)
-          setSelectedConversation(mockConversations[0]?.id || null)
-          return
-        }
+        // if (USE_MOCK_DATA) {
+        //   setConversations(mockConversations)
+        //   setSelectedConversation(mockConversations[0]?.id || null)
+        //   return
+        // }
         const data = await messageService.getConversations()
         const conversationsWithUnread = await fetchUnreadCounts(data)
         setConversations(sortConversations(conversationsWithUnread))
@@ -316,12 +336,12 @@ const MessagesPage = () => {
     const fetchMessages = async () => {
       try {
         setLoadingMessages(true)
-        if (USE_MOCK_DATA) {
-          setMessages(
-            sortMessages(mockMessages.filter((m) => m.conversationId === selectedConversation)),
-          )
-          return
-        }
+        // if (USE_MOCK_DATA) {
+        //   setMessages(
+        //     sortMessages(mockMessages.filter((m) => m.conversationId === selectedConversation)),
+        //   )
+        //   return
+        // }
         const data = await messageService.getMessages(selectedConversation)
         setMessages(sortMessages(data))
         // Mark conversation as read
@@ -360,7 +380,8 @@ const MessagesPage = () => {
 
     // Threshold to consider "near bottom"
     const threshold = 100
-    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= threshold
+    const isNearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <= threshold
 
     // If it's a new message (messages changed), assume we might want to scroll.
     // For simplicity in MVP: If it's my message (added to local state), we forced scroll in handleSendMessage usually?
@@ -408,7 +429,9 @@ const MessagesPage = () => {
       }
       const updatedMessage = await messageService.updateMessage(messageId, { content: newContent })
       setMessages((prev) =>
-        prev.map((msg) => (msg.id === messageId ? { ...msg, content: updatedMessage.content } : msg)),
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, content: updatedMessage.content } : msg,
+        ),
       )
     } catch (error) {
       console.error('Failed to edit message:', error)
@@ -432,25 +455,22 @@ const MessagesPage = () => {
   }, [])
 
   // Delete conversation
-  const handleDeleteConversation = useCallback(
-    async (conversationId: string) => {
-      if (!confirm(t('confirmDelete'))) return
+  const handleDeleteConversation = useCallback(async (conversationId: string) => {
+    if (!confirm(t('confirmDelete'))) return
 
-      try {
-        if (USE_MOCK_DATA) {
-          setConversations((prev) => prev.filter((conv) => conv.id !== conversationId))
-          setSelectedConversation(null)
-          return
-        }
-        await messageService.deleteConversation(conversationId)
+    try {
+      if (USE_MOCK_DATA) {
         setConversations((prev) => prev.filter((conv) => conv.id !== conversationId))
         setSelectedConversation(null)
-      } catch (error) {
-        console.error('Failed to delete conversation:', error)
+        return
       }
-    },
-    [],
-  )
+      await messageService.deleteConversation(conversationId)
+      setConversations((prev) => prev.filter((conv) => conv.id !== conversationId))
+      setSelectedConversation(null)
+    } catch (error) {
+      console.error('Failed to delete conversation:', error)
+    }
+  }, [])
 
   // Gửi tin nhắn qua REST API.
   // Backend sau khi lưu DB sẽ tự emit sự kiện socket (vd: 'newMessage')
@@ -513,7 +533,7 @@ const MessagesPage = () => {
 
       // Add message to local state (socket sẽ broadcast cho người khác)
       setMessages((prev) => {
-        if (prev.some(m => m.id === newMessage.id)) return prev
+        if (prev.some((m) => m.id === newMessage.id)) return prev
         return sortMessages([...prev, newMessage])
       })
       setMessageInput('')
@@ -607,7 +627,7 @@ const MessagesPage = () => {
       const content = lastMsg.content.trim()
 
       // Check for job reference
-      const jobRefMatch = content.match(/^:::JOB_REF:(\{.*\}):::\n([\s\S]*)$/);
+      const jobRefMatch = content.match(/^:::JOB_REF:(\{.*\}):::\n([\s\S]*)$/)
       if (jobRefMatch) {
         return `${senderName}: ${t('jobApplication')}`
       }
@@ -629,7 +649,7 @@ const MessagesPage = () => {
   const selectedConvInfo = selectedConv ? getOtherParticipant(selectedConv) : null
 
   // Determine if other user is online
-  const otherParticipantId = selectedConv?.participants.find(p => p.id !== user?.id)?.id
+  const otherParticipantId = selectedConv?.participants.find((p) => p.id !== user?.id)?.id
   const isOnline = otherParticipantId ? onlineUsers.has(otherParticipantId) : false
 
   const participantNameMap = useMemo(() => {
@@ -662,7 +682,9 @@ const MessagesPage = () => {
     id: msg.id,
     senderId: msg.senderId,
     senderName:
-      msg.senderName || participantNameMap[msg.senderId] || (msg.senderId === user?.id ? t('preview.you') : t('preview.user')),
+      msg.senderName ||
+      participantNameMap[msg.senderId] ||
+      (msg.senderId === user?.id ? t('preview.you') : t('preview.user')),
     content: msg.content,
     timestamp: formatTime(msg.createdAt),
     isOwn: msg.senderId === user?.id,
@@ -674,9 +696,8 @@ const MessagesPage = () => {
   }))
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-linear-to-br from-background via-background to-muted/20">
       <Header />
-
 
       <main className="flex-1 pt-20">
         <div className="max-w-[1600px] mx-auto px-4 py-6">
@@ -686,9 +707,11 @@ const MessagesPage = () => {
           >
             <div className="flex h-full">
               {/* Conversations List */}
-              <div className={`w-full md:w-1/3 border-r border-border/50 flex flex-col bg-gradient-to-b from-muted/20 to-transparent ${selectedConversation ? 'hidden md:flex' : 'flex'}`}>
+              <div
+                className={`w-full md:w-1/3 border-r border-border/50 flex flex-col bg-linear-to-b from-muted/20 to-transparent ${selectedConversation ? 'hidden md:flex' : 'flex'}`}
+              >
                 <div className="p-5 border-b border-border/50 backdrop-blur-sm bg-background/50">
-                  <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  <h2 className="text-2xl font-bold mb-4 bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                     {t('title')}
                   </h2>
                   <div className="relative">
@@ -722,12 +745,13 @@ const MessagesPage = () => {
                           <div
                             key={conv.id}
                             onClick={() => setSelectedConversation(conv.id)}
-                            className={`p-4 cursor-pointer transition-all duration-200 border-l-4 hover:scale-[1.01] ${isActive
-                              ? 'bg-primary/10 border-primary shadow-sm'
-                              : isUnread
-                                ? 'bg-muted/50 border-primary/60 hover:bg-muted/70 hover:border-primary'
-                                : 'border-transparent hover:bg-accent/50 hover:shadow-sm'
-                              }`}
+                            className={`p-4 cursor-pointer transition-all duration-200 border-l-4 hover:scale-[1.01] ${
+                              isActive
+                                ? 'bg-primary/10 border-primary shadow-sm'
+                                : isUnread
+                                  ? 'bg-muted/50 border-primary/60 hover:bg-muted/70 hover:border-primary'
+                                  : 'border-transparent hover:bg-accent/50 hover:shadow-sm'
+                            }`}
                           >
                             <div className="flex gap-3">
                               <div className="relative">
@@ -736,7 +760,7 @@ const MessagesPage = () => {
                                     src={avatar ? resolveMediaUrl(avatar) : undefined}
                                     alt={name}
                                   />
-                                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                                  <AvatarFallback className="bg-linear-to-br from-primary to-primary/60 text-primary-foreground">
                                     {name[0]?.toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
@@ -748,15 +772,17 @@ const MessagesPage = () => {
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start mb-1">
                                   <h3
-                                    className={`truncate ${isUnread ? 'font-semibold text-foreground' : 'font-medium'
-                                      }`}
+                                    className={`truncate ${
+                                      isUnread ? 'font-semibold text-foreground' : 'font-medium'
+                                    }`}
                                   >
                                     {name}
                                   </h3>
                                   {conv.lastMessage && (
                                     <span
-                                      className={`text-xs whitespace-nowrap ml-2 ${isUnread ? 'text-foreground' : 'text-muted-foreground'
-                                        }`}
+                                      className={`text-xs whitespace-nowrap ml-2 ${
+                                        isUnread ? 'text-foreground' : 'text-muted-foreground'
+                                      }`}
                                     >
                                       {formatTime(conv.lastMessage.createdAt)}
                                     </span>
@@ -764,13 +790,16 @@ const MessagesPage = () => {
                                 </div>
                                 <div className="flex justify-between items-center gap-2">
                                   <p
-                                    className={`text-sm truncate ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
-                                      }`}
+                                    className={`text-sm truncate ${
+                                      isUnread
+                                        ? 'text-foreground font-medium'
+                                        : 'text-muted-foreground'
+                                    }`}
                                   >
                                     {previewText}
                                   </p>
                                   {isUnread && (
-                                    <span className="ml-auto bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full shadow-lg animate-pulse min-w-[24px] text-center">
+                                    <span className="ml-auto bg-linear-to-r from-primary to-primary/80 text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full shadow-lg animate-pulse min-w-[24px] text-center">
                                       {unreadCount}
                                     </span>
                                   )}
@@ -786,11 +815,13 @@ const MessagesPage = () => {
               </div>
 
               {/* Message Thread */}
-              <div className={`${selectedConversation ? 'flex' : 'hidden'} md:flex md:w-2/3 flex-col w-full`}>
+              <div
+                className={`${selectedConversation ? 'flex' : 'hidden'} md:flex md:w-2/3 flex-col w-full`}
+              >
                 {selectedConversation && selectedConvInfo ? (
                   <>
                     {/* Thread Header */}
-                    <div className="p-5 border-b border-border/50 flex items-center justify-between backdrop-blur-sm bg-gradient-to-r from-background to-muted/20 shadow-sm">
+                    <div className="p-5 border-b border-border/50 flex items-center justify-between backdrop-blur-sm bg-linear-to-r from-background to-muted/20 shadow-sm">
                       <div className="flex items-center gap-3">
                         <Button
                           variant="ghost"
@@ -801,7 +832,10 @@ const MessagesPage = () => {
                           <ChevronLeft className="h-6 w-6" />
                         </Button>
                         {selectedConvInfo.username ? (
-                          <Link href={`/profile/${selectedConvInfo.username}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                          <Link
+                            href={`/profile/${selectedConvInfo.username}`}
+                            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                          >
                             <Avatar className="h-11 w-11 ring-2 ring-primary/20 shadow-md">
                               <AvatarImage
                                 src={
@@ -811,19 +845,23 @@ const MessagesPage = () => {
                                 }
                                 alt={selectedConvInfo.name}
                               />
-                              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                              <AvatarFallback className="bg-linear-to-br from-primary to-primary/60 text-primary-foreground">
                                 {selectedConvInfo.name[0]?.toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                              <h3 className="font-bold text-lg truncate whitespace-nowrap">{selectedConvInfo.name}</h3>
+                              <h3 className="font-bold text-lg truncate whitespace-nowrap">
+                                {selectedConvInfo.name}
+                              </h3>
                               {isOnline && (
                                 <div className="flex items-center gap-1.5">
                                   <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                   </span>
-                                  <p className="not-italic text-xs text-green-600 font-medium">{t('activeNow')}</p>
+                                  <p className="not-italic text-xs text-green-600 font-medium">
+                                    {t('activeNow')}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -839,19 +877,23 @@ const MessagesPage = () => {
                                 }
                                 alt={selectedConvInfo.name}
                               />
-                              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                              <AvatarFallback className="bg-linear-to-br from-primary to-primary/60 text-primary-foreground">
                                 {selectedConvInfo.name[0]?.toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                              <h3 className="font-bold text-lg truncate whitespace-nowrap">{selectedConvInfo.name}</h3>
+                              <h3 className="font-bold text-lg truncate whitespace-nowrap">
+                                {selectedConvInfo.name}
+                              </h3>
                               {isOnline && (
                                 <div className="flex items-center gap-1.5">
                                   <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                   </span>
-                                  <p className="text-xs text-green-600 font-medium">{t('activeNow')}</p>
+                                  <p className="text-xs text-green-600 font-medium">
+                                    {t('activeNow')}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -877,7 +919,10 @@ const MessagesPage = () => {
                     </div>
 
                     {/* Messages */}
-                    <div ref={threadContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-gradient-to-b from-transparent to-muted/5 scrollbar-thin">
+                    <div
+                      ref={threadContainerRef}
+                      className="flex-1 overflow-y-auto overflow-x-hidden p-6 bg-linear-to-b from-transparent to-muted/5 scrollbar-thin"
+                    >
                       {loadingMessages ? (
                         <div className="flex items-center justify-center h-full">
                           <div className="flex flex-col items-center gap-3">
@@ -888,7 +933,11 @@ const MessagesPage = () => {
                       ) : (
                         <MessageThread
                           messages={formattedMessages}
-                          otherParticipantAvatar={selectedConvInfo.avatar ? resolveMediaUrl(selectedConvInfo.avatar) : undefined}
+                          otherParticipantAvatar={
+                            selectedConvInfo.avatar
+                              ? resolveMediaUrl(selectedConvInfo.avatar)
+                              : undefined
+                          }
                         />
                       )}
                     </div>
@@ -899,7 +948,9 @@ const MessagesPage = () => {
                         <div className="mb-2 p-2 bg-muted rounded-lg flex items-center justify-between animate-in slide-in-from-bottom-2">
                           <div className="flex items-center gap-2">
                             {getFileIcon(selectedFile)}
-                            <span className="text-sm truncate max-w-[200px]">{selectedFile.name}</span>
+                            <span className="text-sm truncate max-w-[200px]">
+                              {selectedFile.name}
+                            </span>
                           </div>
                           <Button
                             variant="ghost"
@@ -966,7 +1017,11 @@ const MessagesPage = () => {
                         />
                         <Button
                           onClick={handleSendMessage}
-                          disabled={(!messageInput.trim() && !selectedFile) || sendingMessage || uploadingFile}
+                          disabled={
+                            (!messageInput.trim() && !selectedFile) ||
+                            sendingMessage ||
+                            uploadingFile
+                          }
                           className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/20 transition-all duration-300"
                         >
                           {sendingMessage || uploadingFile ? (

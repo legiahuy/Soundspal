@@ -87,7 +87,7 @@ export default function SearchPage() {
   // Fetch data when debounced query changes
   useEffect(() => {
     const q = debouncedQuery.trim()
-    
+
     // Update URL to match search query
     // Use replace to avoid history stack overflow while typing
     if (q !== initialQuery) {
@@ -131,7 +131,7 @@ export default function SearchPage() {
 
   // Sync query state with URL search params (handle back/forward navigation)
   useEffect(() => {
-    // Only update if the URL query is different from current state 
+    // Only update if the URL query is different from current state
     // AND different from the debounced query we just set (to avoid race conditions while typing)
     if (initialQuery !== query && initialQuery !== debouncedQuery) {
       setQuery(initialQuery)
@@ -147,65 +147,73 @@ export default function SearchPage() {
     setDebouncedQuery(query)
   }
 
-  // Map JobPostSearchDto to JobPost for JobCard component
+  // Map API response to JobPost — API returns snake_case; camelCase as fallback for search service
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapJobSearchToJobPost = (job: any): JobPost => {
     return {
       id: job.id,
       title: job.title,
-      description: job.description ?? job.briefDescription ?? job.brief_description ?? '',
-      brief_description: job.briefDescription ?? job.brief_description,
-      post_type: (job.postType ?? job.post_type) as 'job_offer' | 'gig' | 'availability',
+      description: job.description ?? '',
+      brief_description: job.brief_description ?? undefined,
+      post_type: (job.post_type ?? job.postType) as 'job_offer' | 'gig' | 'availability',
       type: job.type as 'producer' | 'singer' | 'venue' | undefined,
       status: job.status as 'draft' | 'published' | 'closed' | 'completed' | 'cancelled',
       visibility: job.visibility as 'public' | 'private' | 'invite_only',
-      creator_id: job.creatorId ?? job.creator_id,
-      creator_role: job.creatorRole ?? job.creator_role,
-      creator_display_name: job.creatorDisplayName ?? job.creator_display_name,
-      creator_username: job.creatorUsername ?? job.creator_username,
-      creator_avatar: job.creatorAvatarUrl ?? job.creator_avatar_url,
-      location: job.location || job.locationText || job.location_text,
-      location_type: (job.locationType ?? job.location_type) as 'remote' | 'onsite' | 'hybrid' | undefined,
-      budget_min: job.budgetMin ?? job.budget_min,
-      budget_max: job.budgetMax ?? job.budget_max,
-      budget_currency: (job.budgetCurrency ?? job.budget_currency) as 'USD' | 'EUR' | 'JPY' | 'VND' | undefined,
-      payment_type: (job.paymentType ?? job.payment_type) as
+      creator_id: job.creator_id ?? job.creatorId,
+      creator_role: job.creator_role ?? job.creatorRole,
+      creator_display_name: job.creator_display_name ?? job.creatorDisplayName,
+      creator_username: job.creator_username ?? job.creatorUsername,
+      creator_avatar: job.creator_avatar_url ?? job.creatorAvatarUrl,
+      location: job.location ?? job.locationText,
+      location_type: (job.location_type ?? job.locationType) as
+        | 'remote'
+        | 'onsite'
+        | 'hybrid'
+        | undefined,
+      budget_min: job.budget_min ?? job.budgetMin,
+      budget_max: job.budget_max ?? job.budgetMax,
+      budget_currency: (job.budget_currency ?? job.budgetCurrency) as
+        | 'USD'
+        | 'EUR'
+        | 'JPY'
+        | 'VND'
+        | undefined,
+      payment_type: (job.payment_type ?? job.paymentType) as
         | 'bySession'
         | 'byHour'
         | 'byProject'
         | 'byMonth'
         | undefined,
-      recruitment_type: (job.recruitmentType ?? job.recruitment_type) as
+      recruitment_type: (job.recruitment_type ?? job.recruitmentType) as
         | 'full_time'
         | 'part_time'
         | 'contract'
         | 'one_time'
         | undefined,
-      experience_level: (job.experienceLevel ?? job.experience_level) as
+      experience_level: (job.experience_level ?? job.experienceLevel) as
         | 'beginner'
         | 'intermediate'
         | 'expert'
         | 'any'
         | undefined,
-      required_skills: job.requiredSkills ?? job.required_skills,
+      required_skills: job.required_skills ?? job.requiredSkills,
       genres: job.genres,
       benefits: job.benefits,
-      submission_deadline: job.deadline ?? job.submission_deadline ?? undefined,
-      created_at: job.createdAt ?? job.created_at,
-      updated_at: job.updatedAt ?? job.updated_at,
-      published_at: job.publishedAt ?? job.published_at ?? undefined,
-      closed_at: job.closedAt ?? job.closed_at ?? undefined,
-      total_submissions: job.applicationsCount ?? job.applications_count ?? job.total_submissions,
-      applications_count: job.applicationsCount ?? job.applications_count,
-      bookings_count: job.bookingsCount ?? job.bookings_count,
-      views_count: job.viewsCount ?? job.views_count,
+      submission_deadline: job.deadline,
+      created_at: job.createdAt,
+      updated_at: job.updatedAt,
+      published_at: job.publishedAt,
+      closed_at: job.closedAt,
+      total_submissions: job.applicationsCount,
+      applications_count: job.applicationsCount,
+      bookings_count: job.bookingsCount,
+      views_count: job.viewsCount,
     }
   }
 
   const handleViewJobDetails = (jobId: string) => {
     router.push(`/jobs/${jobId}`)
   }
-
-
 
   const renderJobs = (items?: JobPostSearchDto[]) => {
     if (!items || items.length === 0) {
@@ -266,8 +274,16 @@ export default function SearchPage() {
               id={user.id}
               name={user.displayName || user.username}
               username={user.username}
-              image={user.avatarUrl ? resolveMediaUrl(user.avatarUrl) : '/images/artist/default-avatar.jpeg'}
-              genres={user.genres?.map((g: { name?: string } | string) => typeof g === 'string' ? g : (g.name || '')) || []}
+              image={
+                user.avatarUrl
+                  ? resolveMediaUrl(user.avatarUrl)
+                  : '/images/artist/default-avatar.jpeg'
+              }
+              genres={
+                user.genres?.map((g: { name?: string } | string) =>
+                  typeof g === 'string' ? g : g.name || '',
+                ) || []
+              }
               location={user.location || tCommon('unknown')}
               description={user.briefBio}
               roleLabel={tOptions(`roles.${user.role}`)}
@@ -366,14 +382,8 @@ export default function SearchPage() {
 
       <div className="w-full bg-linear-to-br from-muted/50 via-muted/30 to-muted/40 relative">
         <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 py-8 md:py-10 relative z-10">
-          {error && (
-            <p className="text-destructive mb-4">
-              {error}
-            </p>
-          )}
-          {loading && (
-            <p className="text-muted-foreground mb-4">{t('loading')}</p>
-          )}
+          {error && <p className="text-destructive mb-4">{error}</p>}
+          {loading && <p className="text-muted-foreground mb-4">{t('loading')}</p>}
 
           {!loading && !error && (
             <div className="w-full relative">
@@ -385,31 +395,40 @@ export default function SearchPage() {
                 >
                   <div className="flex items-center justify-between mb-8">
                     <TabsList className="bg-muted/60 p-1.5 h-12 inline-flex shrink-0 border border-border/40">
-                      <TabsTrigger value="all" className="px-8 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-semibold">
+                      <TabsTrigger
+                        value="all"
+                        className="px-8 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md font-semibold"
+                      >
                         {t('tabs.all')}
                       </TabsTrigger>
-                      <TabsTrigger value="jobs" className="px-8 rounded-lg gap-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md font-semibold">
+                      <TabsTrigger
+                        value="jobs"
+                        className="px-8 rounded-lg gap-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md font-semibold"
+                      >
                         <Briefcase className="w-4 h-4" />
                         {t('tabs.jobs')}
                       </TabsTrigger>
-                      <TabsTrigger value="users" className="px-8 rounded-lg gap-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md font-semibold">
+                      <TabsTrigger
+                        value="users"
+                        className="px-8 rounded-lg gap-2.5 data-[state=active]:bg-background data-[state=active]:shadow-md font-semibold"
+                      >
                         <UserIcon className="w-4 h-4" />
                         {t('tabs.users')}
                       </TabsTrigger>
                     </TabsList>
                     <div className="text-sm text-muted-foreground hidden sm:block font-medium bg-card/30 px-3 py-1.5 rounded-full border border-border/50">
-                      {(activeTab === 'all'
+                      {activeTab === 'all'
                         ? (jobs?.jobPosts.length ?? 0) + (users?.userProfiles.length ?? 0)
                         : activeTab === 'jobs'
-                          ? jobs?.jobPosts.length ?? 0
-                          : users?.userProfiles.length ?? 0)}{' '}
+                          ? (jobs?.jobPosts.length ?? 0)
+                          : (users?.userProfiles.length ?? 0)}{' '}
                       {tCommon('results')}
                     </div>
                   </div>
 
                   <TabsContent value="all" className="mt-0 space-y-10 focus-visible:outline-none">
                     {(!users?.userProfiles || users.userProfiles.length === 0) &&
-                      (!jobs?.jobPosts || jobs.jobPosts.length === 0) ? (
+                    (!jobs?.jobPosts || jobs.jobPosts.length === 0) ? (
                       <div className="text-center py-20 border-2 border-dashed border-border/50 rounded-2xl bg-card/20 backdrop-blur-sm">
                         <p className="text-muted-foreground text-lg">{tCommon('noResults')}</p>
                       </div>
@@ -421,8 +440,13 @@ export default function SearchPage() {
                               <div className="bg-primary/10 p-2.5 rounded-xl shadow-inner">
                                 <UserIcon className="h-5 w-5 text-primary" />
                               </div>
-                              <h3 className="text-2xl font-bold tracking-tight">{t('users.title')}</h3>
-                              <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 font-semibold">
+                              <h3 className="text-2xl font-bold tracking-tight">
+                                {t('users.title')}
+                              </h3>
+                              <Badge
+                                variant="secondary"
+                                className="rounded-full px-2.5 py-0.5 font-semibold"
+                              >
                                 {users.userProfiles.length}
                               </Badge>
                             </div>
@@ -436,8 +460,13 @@ export default function SearchPage() {
                               <div className="bg-primary/10 p-2.5 rounded-xl shadow-inner">
                                 <Briefcase className="h-5 w-5 text-primary" />
                               </div>
-                              <h3 className="text-2xl font-bold tracking-tight">{t('jobs.title')}</h3>
-                              <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 font-semibold">
+                              <h3 className="text-2xl font-bold tracking-tight">
+                                {t('jobs.title')}
+                              </h3>
+                              <Badge
+                                variant="secondary"
+                                className="rounded-full px-2.5 py-0.5 font-semibold"
+                              >
                                 {jobs.jobPosts.length}
                               </Badge>
                             </div>

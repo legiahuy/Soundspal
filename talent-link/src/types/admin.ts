@@ -36,14 +36,14 @@ export interface FeaturedJob {
   type?: 'producer' | 'singer' | 'venue'
   status: 'draft' | 'published' | 'closed' | 'completed' | 'cancelled'
   visibility: 'public' | 'private' | 'invite_only'
-  
+
   // Creator Info
   creator_id: string
   creator_role: string
-  creator_name?: string
+  creator_display_name?: string
   creator_username?: string
-  creator_avatar?: string
-  
+  creator_avatar_url?: string
+
   // Location & Budget
   location?: string
   location_type?: 'remote' | 'onsite' | 'hybrid'
@@ -51,23 +51,23 @@ export interface FeaturedJob {
   budget_max?: number
   budget_currency?: 'USD' | 'EUR' | 'JPY' | 'VND'
   payment_type?: 'bySession' | 'byHour' | 'byProject' | 'byMonth'
-  
+
   // Requirements
   experience_level?: 'beginner' | 'intermediate' | 'expert' | 'any'
   required_skills?: string[]
   genres?: string[]
-  
+
   // Dates
   deadline?: string
   submission_deadline?: string
   created_at: string
   updated_at: string
   published_at?: string
-  
+
   // Featured status
   is_featured: boolean
   featured_at?: string
-  
+
   // Stats
   total_submissions?: number
   views_count?: number

@@ -1,6 +1,14 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  startTransition,
+  ReactNode,
+} from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useAuthStore } from '@/stores/authStore'
 import { messageService } from '@/services/messageService'
@@ -15,7 +23,12 @@ interface SocketContextProps {
   joinConversation: (conversationId: string) => void
   leaveConversation: (conversationId: string) => void
   sendTyping: (conversationId: string, isTyping: boolean) => void
-  sendMessage: (payload: { conversationId: string; content: string; attachmentUrl?: string; attachmentType?: string }) => void
+  sendMessage: (payload: {
+    conversationId: string
+    content: string
+    attachmentUrl?: string
+    attachmentType?: string
+  }) => void
 }
 
 const SocketContext = createContext<SocketContextProps>({
@@ -55,15 +68,19 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   }, [isAuthenticated])
 
   useEffect(() => {
-    fetchUnreadCount()
+    startTransition(() => {
+      fetchUnreadCount()
+    })
   }, [fetchUnreadCount])
 
   useEffect(() => {
     if (!isAuthenticated || !accessToken) {
       if (socket) {
         socket.disconnect()
-        setSocket(null)
-        setIsConnected(false)
+        startTransition(() => {
+          setSocket(null)
+          setIsConnected(false)
+        })
       }
       return
     }
@@ -78,8 +95,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         transports: ['polling', 'websocket'], // Prefer polling first for proxy compatibility
         reconnection: true,
       })
-      
-      setSocket(newSocket)
+
+      startTransition(() => {
+        setSocket(newSocket)
+      })
 
       newSocket.on('connect', () => {
         console.log('✅ Global Socket connected:', newSocket.id)
@@ -98,10 +117,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       // Updates for unread count
       // Tin nhắn mới -> Tăng unread count nếu không phải tin mình gửi
       const handleNewMessage = (msg: Message) => {
-         // Nếu là tin nhắn của mình thì không tăng
+        // Nếu là tin nhắn của mình thì không tăng
         if (msg.senderId === user?.id) return
 
-        // Ở đây đơn giản là tăng 1. 
+        // Ở đây đơn giản là tăng 1.
         // Logic phức tạp hơn (VD: đang xem conversation đó thì không tăng) cần xử lý ở level Page
         // Tuy nhiên `unreadCount` ở đây là global badge ở Header.
         // Khi user đang ở trang chat, logic ở trang đó sẽ mark read -> gọi refreshUnreadCount.
@@ -123,10 +142,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
           return next
         })
       })
-      
+
       // Also potentially 'users:online' sending list initially?
       newSocket.on('users:online', (userIds: string[]) => {
-          setOnlineUsers(new Set(userIds))
+        setOnlineUsers(new Set(userIds))
       })
     }
 
@@ -137,21 +156,38 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   }, [isAuthenticated, accessToken, user?.id, socket]) // socket dependency added but handled by check
 
   // Helper functions
-  const joinConversation = useCallback((conversationId: string) => {
-    socket?.emit('joinConversation', conversationId)
-  }, [socket])
+  const joinConversation = useCallback(
+    (conversationId: string) => {
+      socket?.emit('joinConversation', conversationId)
+    },
+    [socket],
+  )
 
-  const leaveConversation = useCallback((conversationId: string) => {
-    socket?.emit('leaveConversation', conversationId)
-  }, [socket])
+  const leaveConversation = useCallback(
+    (conversationId: string) => {
+      socket?.emit('leaveConversation', conversationId)
+    },
+    [socket],
+  )
 
-  const sendTyping = useCallback((conversationId: string, isTyping: boolean) => {
-    socket?.emit('typing', { conversationId, isTyping })
-  }, [socket])
+  const sendTyping = useCallback(
+    (conversationId: string, isTyping: boolean) => {
+      socket?.emit('typing', { conversationId, isTyping })
+    },
+    [socket],
+  )
 
-  const sendMessage = useCallback((payload: { conversationId: string; content: string; attachmentUrl?: string; attachmentType?: string }) => {
-    socket?.emit('sendMessage', payload)
-  }, [socket])
+  const sendMessage = useCallback(
+    (payload: {
+      conversationId: string
+      content: string
+      attachmentUrl?: string
+      attachmentType?: string
+    }) => {
+      socket?.emit('sendMessage', payload)
+    },
+    [socket],
+  )
 
   return (
     <SocketContext.Provider

@@ -17,7 +17,6 @@ import type {
   BulkActionResponse,
   JobSearchRequest,
   JobSearchResult,
-  ApiResult,
 } from '@/types/job'
 
 import { BackendJobSearchResponse } from '@/types/search'

@@ -32,13 +32,22 @@ const formatDate = (dateString: string) => {
   }
 }
 
-export function AdminJobCard({ job, onFeatureToggle, isLoading, selectable, selected, onSelect }: AdminJobCardProps) {
+export function AdminJobCard({
+  job,
+  onFeatureToggle,
+  isLoading,
+  selectable,
+  selected,
+  onSelect,
+}: AdminJobCardProps) {
   return (
-    <Card 
+    <Card
       className={cn(
-        "group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg h-full",
-        selectable ? "cursor-pointer hover:border-primary/50" : "hover:-translate-y-1 hover:border-primary/30",
-        selected && "border-primary bg-primary/5 shadow-md"
+        'group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg h-full',
+        selectable
+          ? 'cursor-pointer hover:border-primary/50'
+          : 'hover:-translate-y-1 hover:border-primary/30',
+        selected && 'border-primary bg-primary/5 shadow-md',
       )}
       onClick={() => selectable && onSelect && onSelect(job.id)}
     >
@@ -79,16 +88,14 @@ export function AdminJobCard({ job, onFeatureToggle, isLoading, selectable, sele
 
         {/* Brief Description */}
         {job.brief_description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-            {job.brief_description}
-          </p>
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{job.brief_description}</p>
         )}
 
         {/* Creator Info */}
         <div className="flex items-center gap-2 mb-3 text-sm">
           <span className="text-muted-foreground">By:</span>
           <span className="font-medium truncate">
-            {job.creator_name || job.creator_username || 'Unknown'}
+            {job.creator_display_name || job.creator_username || 'Unknown'}
           </span>
         </div>
 

@@ -45,11 +45,7 @@ import {
   FileText,
   ExternalLink,
 } from 'lucide-react'
-import type {
-  SubmissionResponse,
-  SubmissionListResponse,
-  SubmissionDetailResponse,
-} from '@/types/job'
+import type { SubmissionResponse, SubmissionDetailResponse } from '@/types/job'
 
 type StatusFilter =
   | 'all'
@@ -59,6 +55,35 @@ type StatusFilter =
   | 'rejected'
   | 'skipped'
   | 'withdrawn'
+
+// Extend SubmissionResponse with optional runtime-fetched profile fields
+type SubmissionWithProfile = SubmissionResponse & {
+  applicant_account?: {
+    username?: string
+    display_name?: string
+    full_name?: string
+    avatar_url?: string
+  }
+  creator_profile?: { username?: string; full_name?: string; avatar_url?: string }
+  creator_username?: string
+  username?: string
+  creator_avatar?: string
+  full_name?: string
+}
+
+// Extend SubmissionDetailResponse with optional runtime-fetched fields
+type EnrichedSubmissionDetail = SubmissionDetailResponse & {
+  applicant_account?: {
+    username?: string
+    display_name?: string
+    full_name?: string
+    avatar_url?: string
+  }
+  creator_username?: string
+  username?: string
+  creator_avatar?: string
+  avatar_url?: string
+}
 
 const statusBadgeConfig: Record<
   string,
@@ -140,7 +165,7 @@ const JobApplicationsPage = () => {
   const [reviewNotes, setReviewNotes] = useState('')
   const [processing, setProcessing] = useState<string | null>(null)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
-  const [viewingSubmission, setViewingSubmission] = useState<SubmissionDetailResponse | null>(null)
+  const [viewingSubmission, setViewingSubmission] = useState<EnrichedSubmissionDetail | null>(null)
   const [viewLoading, setViewLoading] = useState(false)
 
   const fetchJob = useCallback(async () => {
@@ -165,12 +190,12 @@ const JobApplicationsPage = () => {
 
       // Fetch full applicant profiles in parallel using the username endpoint for consistency
       const submissionsWithProfiles = await Promise.all(
-        rawSubmissions.map(async (submission: any) => {
+        rawSubmissions.map(async (submission: SubmissionResponse) => {
           try {
             const username =
-              submission.creator_profile?.username ||
-              submission.creator_username ||
-              submission.username
+              (submission as SubmissionWithProfile).creator_profile?.username ??
+              (submission as SubmissionWithProfile).creator_username ??
+              (submission as SubmissionWithProfile).username
 
             let profile = null
             if (username) {
@@ -257,24 +282,21 @@ const JobApplicationsPage = () => {
     setViewLoading(true)
     setViewingSubmission(null)
     try {
-      const detail = await jobService.getSubmissionById(submissionId)
+      const detail = (await jobService.getSubmissionById(submissionId)) as EnrichedSubmissionDetail
 
       // Fetch full applicant profile using the username endpoint for consistency
       const username =
-        detail.creator_profile?.username ||
-        (detail as any).creator_username ||
-        (detail as any).username
+        detail.creator_profile?.username ?? detail.creator_username ?? detail.username
       if (username) {
         try {
           const applicantProfile = await userService.getUserByUsername(username)
-          // Store it for use in the dialog
-          ;(detail as any).applicant_account = applicantProfile
+          detail.applicant_account = applicantProfile
         } catch (err) {
           console.warn('Failed to fetch applicant profile by username', err)
           // Fallback to fetch by ID if username fails
           try {
             const applicantProfile = await userService.getUser(detail.creator_id)
-            ;(detail as any).applicant_account = applicantProfile
+            detail.applicant_account = applicantProfile
           } catch (innerErr) {
             console.warn('Failed to fetch applicant profile by ID', innerErr)
           }
@@ -282,8 +304,8 @@ const JobApplicationsPage = () => {
       } else {
         // No username available, fallback to fetch by ID
         try {
-          const applicantProfile = await userService.getUser(detail.creator_id)
-          ;(detail as any).applicant_account = applicantProfile
+          const noUsernameProfile = await userService.getUser(detail.creator_id)
+          detail.applicant_account = noUsernameProfile
         } catch (err) {
           console.warn('Failed to fetch applicant profile by ID', err)
         }
@@ -299,27 +321,27 @@ const JobApplicationsPage = () => {
     }
   }
 
-  const handleViewProfile = (userId: string, username?: string) => {
-    router.push(`/profile/${username || userId}`)
-  }
+  // const handleViewProfile = (userId: string, username?: string) => {
+  //   router.push(`/profile/${username || userId}`)
+  // }
 
-  const statusCounts = useMemo(() => {
-    const counts = {
-      all: submissions.length,
-      pending_review: 0,
-      under_review: 0,
-      accepted: 0,
-      rejected: 0,
-      skipped: 0,
-      withdrawn: 0,
-    }
-    submissions.forEach((sub) => {
-      if (sub.status in counts) {
-        counts[sub.status as keyof typeof counts]++
-      }
-    })
-    return counts
-  }, [submissions])
+  // const statusCounts = useMemo(() => {
+  //   const counts = {
+  //     all: submissions.length,
+  //     pending_review: 0,
+  //     under_review: 0,
+  //     accepted: 0,
+  //     rejected: 0,
+  //     skipped: 0,
+  //     withdrawn: 0,
+  //   }
+  //   submissions.forEach((sub) => {
+  //     if (sub.status in counts) {
+  //       counts[sub.status as keyof typeof counts]++
+  //     }
+  //   })
+  //   return counts
+  // }, [submissions])
 
   return (
     <div className="min-h-screen relative">
@@ -465,7 +487,7 @@ const JobApplicationsPage = () => {
                     </div>
                   ) : (
                     <div className="divide-y divide-border/60">
-                      {submissions.map((submission: any) => {
+                      {submissions.map((submission: SubmissionWithProfile) => {
                         const account = submission.applicant_account
                         const profile = submission.creator_profile
 
@@ -490,7 +512,7 @@ const JobApplicationsPage = () => {
                               <div className="flex gap-4 flex-1">
                                 <Link
                                   href={`/profile/${profileUsername}`}
-                                  className="w-12 h-12 rounded-lg transition-opacity hover:opacity-80 flex-shrink-0 focus:outline-hidden block"
+                                  className="w-12 h-12 rounded-lg transition-opacity hover:opacity-80 shrink-0 focus:outline-hidden block"
                                 >
                                   <Avatar className="w-full h-full rounded-lg ring-2 ring-primary/5">
                                     {avatarUrl && (
@@ -621,14 +643,17 @@ const JobApplicationsPage = () => {
             <div className="space-y-6">
               <div className="space-y-4">
                 {(() => {
-                  // Official account profile (fetched via userService in handleViewSubmission)
-                  const account = (viewingSubmission as any).applicant_account
-                  const profile = (viewingSubmission as any).creator_profile
+                  const account = viewingSubmission.applicant_account
+                  const profile =
+                    viewingSubmission.creator_profile as EnrichedSubmissionDetail['creator_profile'] & {
+                      full_name?: string
+                      avatar_url?: string
+                    }
 
                   const profileUsername =
-                    account?.username ||
-                    profile?.username ||
-                    (viewingSubmission as any).creator_username ||
+                    account?.username ??
+                    profile?.username ??
+                    viewingSubmission.creator_username ??
                     viewingSubmission.creator_id
 
                   const displayName =
@@ -639,17 +664,17 @@ const JobApplicationsPage = () => {
                     'Anonymous applicant'
 
                   const avatarUrl =
-                    account?.avatar_url ||
-                    profile?.avatar_url ||
-                    (viewingSubmission as any).creator_avatar ||
-                    (viewingSubmission as any).avatar_url
+                    account?.avatar_url ??
+                    profile?.avatar_url ??
+                    viewingSubmission.creator_avatar ??
+                    viewingSubmission.avatar_url
 
                   return (
                     <div className="space-y-5">
                       {/* Top Header: Avatar, Name & Status Tag centered */}
                       <div className="flex items-center gap-4">
                         <Link
-                          className="cursor-pointer transition-opacity hover:opacity-80 flex-shrink-0 focus:outline-hidden block"
+                          className="cursor-pointer transition-opacity hover:opacity-80 shrink-0 focus:outline-hidden block"
                           href={`/profile/${profileUsername}`}
                         >
                           <Avatar className="w-16 h-16 rounded-xl border-2 border-primary/10">

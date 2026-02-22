@@ -128,7 +128,7 @@ const JobPostFormPage = () => {
     return () => {
       active = false
     }
-  }, [])
+  }, [t])
 
   const canSubmit = useMemo(() => {
     if (!title.trim()) return false
@@ -217,10 +217,7 @@ const JobPostFormPage = () => {
       router.push('/jobs/my-posts')
     } catch (error) {
       console.error('Failed to create job', error)
-      const message =
-        error instanceof Error
-          ? error.message
-          : t('messages.createError')
+      const message = error instanceof Error ? error.message : t('messages.createError')
       toast.error(message)
     } finally {
       setSubmitting(false)
@@ -251,9 +248,7 @@ const JobPostFormPage = () => {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-4 text-foreground">
               <div className="space-y-3">
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-                  {t('title')}
-                </h1>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{t('title')}</h1>
                 <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
                   {t('subtitle')}
                 </p>
@@ -281,9 +276,7 @@ const JobPostFormPage = () => {
           <Card className="shadow-lg border-border/50 bg-card/70 backdrop-blur-sm">
             <CardHeader className="border-b border-border/60">
               <CardTitle className="text-2xl font-semibold">{t('form.title')}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {t('form.description')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('form.description')}</p>
             </CardHeader>
             <CardContent className="pt-6">
               <form className="space-y-10" onSubmit={handleSubmit}>

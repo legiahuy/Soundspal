@@ -19,6 +19,7 @@ interface JobWithCreator extends JobPost {
 }
 
 // Helper functions (moved outside component)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getTimeAgo = (dateString: string, t: any) => {
   const date = new Date(dateString)
   const now = new Date()
@@ -46,6 +47,7 @@ const getTimeAgo = (dateString: string, t: any) => {
   return months === 1 ? t('timeAgo.month', { count: 1 }) : t('timeAgo.months', { count: months })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const formatSalary = (job: JobWithCreator, tOptions: any, t: any) => {
   if (job.budget_min && job.budget_max && job.budget_currency && job.payment_type) {
     const formatNumber = (num: number) => {
