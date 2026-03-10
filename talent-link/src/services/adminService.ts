@@ -6,6 +6,10 @@ import type {
   FeaturedJobsResponse,
   FeatureActionResponse,
   AdminPaginationParams,
+  AdminUser,
+  AdminUsersResponse,
+  AdminUserParams,
+  AdminUserActionResponse,
 } from '@/types/admin'
 
 // Check if we should use mock data
@@ -68,6 +72,50 @@ export const adminService = {
       params: { q: query },
     })
     return res.data.data || []
+  },
+
+  // ===== USER MANAGEMENT =====
+
+  listUsers: async (params?: AdminUserParams): Promise<AdminUsersResponse> => {
+    const { limit = 20, offset = 0, role, search, status } = params || {}
+
+    const res = await axiosClient.get('/admin/users', {
+      params: { limit, offset, role, search, status },
+    })
+    return res.data
+  },
+
+  getUser: async (userId: string): Promise<{ data: AdminUser }> => {
+    const res = await axiosClient.get(`/admin/users/${userId}`)
+    return res.data
+  },
+
+  updateUserRole: async (
+    userId: string,
+    role: string,
+  ): Promise<AdminUserActionResponse> => {
+    const res = await axiosClient.put(`/admin/users/${userId}/role`, { role })
+    return res.data
+  },
+
+  banUser: async (userId: string): Promise<AdminUserActionResponse> => {
+    const res = await axiosClient.put(`/admin/users/${userId}/ban`)
+    return res.data
+  },
+
+  unbanUser: async (userId: string): Promise<AdminUserActionResponse> => {
+    const res = await axiosClient.delete(`/admin/users/${userId}/ban`)
+    return res.data
+  },
+
+  verifyUser: async (userId: string): Promise<AdminUserActionResponse> => {
+    const res = await axiosClient.put(`/admin/users/${userId}/verify`)
+    return res.data
+  },
+
+  unverifyUser: async (userId: string): Promise<AdminUserActionResponse> => {
+    const res = await axiosClient.delete(`/admin/users/${userId}/verify`)
+    return res.data
   },
 
   // ===== UTILITY =====
