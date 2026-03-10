@@ -49,7 +49,7 @@
     "privacy": "Chính sách",
     "connect": "Kết nối",
     "feedback": "Đóng góp ý kiến",
-    "copyright": "© 2025 TalentLink. All rights reserved."
+    "copyright": "© 2025 Soundspal. All rights reserved."
   },
   "LanguageSwitcher": {
     "action": "Lựa chọn ngôn ngữ",
@@ -61,12 +61,12 @@
       "title": "Kết nối tài năng. Nuôi dưỡng sự nghiệp. Tạo dựng thành công.",
       "description": "Hàng ngàn nghệ sĩ đã tìm được cơ hội biểu mới cùng chúng tôi. Khởi động chương tiếp theo cho hành trình âm nhạc của bạn ngay tại đây.",
       "imageAlt": "Image",
-      "logoAlt": "TalentLink Logo"
+      "logoAlt": "Soundspal Logo"
     },
     "login": {
       "pageTitle": "Đăng nhập",
       "title": "Chào mừng quay lại",
-      "subtitle": "Đăng nhập vào tài khoản TalentLink của bạn",
+      "subtitle": "Đăng nhập vào tài khoản Soundspal của bạn",
       "email": "Email hoặc Tên đăng nhập",
       "emailPlaceholder": "Email hoặc tên đăng nhập",
       "emailInvalid": "Vui lòng nhập email hoặc tên đăng nhập hợp lệ",
@@ -83,7 +83,7 @@
     },
     "signup": {
       "pageTitle": "Đăng ký",
-      "title": "Tạo tài khoản TalentLink",
+      "title": "Tạo tài khoản Soundspal",
       "subtitle": "Chào mừng bạn! Hãy đăng ký để bắt đầu!",
       "displayname": "Tên hiển thị",
       "displaynamePlaceholder": "Tên nghệ sĩ / venue",
@@ -229,7 +229,7 @@
       "noResults": "Không có công việc nổi bật"
     },
     "features": {
-      "title": "Tại Sao Chọn TalentLink?",
+      "title": "Tại Sao Chọn Soundspal?",
       "subtitle": "Nền tảng kết nối chuyên nghiệp và hiệu quả nhất",
       "diverseGenres": {
         "title": "Đa Dạng Thể Loại",
@@ -257,7 +257,7 @@
     },
     "mission": {
       "title": "Sứ Mệnh Của Chúng Tôi",
-      "description": "Tại TalentLink, chúng tôi tin rằng mọi nghệ sĩ đều xứng đáng có sân khấu và mọi địa điểm đều xứng đáng có những màn trình diễn tuyệt vời. Nền tảng của chúng tôi xóa bỏ rào cản giữa tài năng và cơ hội bằng cách cung cấp một thị trường liền mạch, minh bạch và chuyên nghiệp cho ngành công nghiệp âm nhạc."
+      "description": "Tại Soundspal, chúng tôi tin rằng mọi nghệ sĩ đều xứng đáng có sân khấu và mọi địa điểm đều xứng đáng có những màn trình diễn tuyệt vời. Nền tảng của chúng tôi xóa bỏ rào cản giữa tài năng và cơ hội bằng cách cung cấp một thị trường liền mạch, minh bạch và chuyên nghiệp cho ngành công nghiệp âm nhạc."
     },
     "values": {
       "title": "Giá Trị Cốt Lõi",
@@ -713,7 +713,7 @@
     "back": "Quay lại",
     "backToHome": "Về trang chủ",
     "exploreJobs": "Khám phá việc làm",
-    "logoAlt": "Logo TalentLink"
+    "logoAlt": "Logo Soundspal"
   },
   "SearchPage": {
     "title": "Kết quả tìm kiếm",

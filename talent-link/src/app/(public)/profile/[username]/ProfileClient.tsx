@@ -45,7 +45,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (profile) {
       const displayName = profile.display_name
-      document.title = `${displayName} | TalentLink`
+      document.title = `${displayName} | Soundspal`
     }
   }, [profile])
 

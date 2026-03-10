@@ -13,8 +13,8 @@ const Footer = () => {
           <div className="space-y-4">
             <Link href="/" className="flex items-center">
               <Image
-                src="/TalentLink.svg"
-                alt="TalentLink Logo"
+                src="/Soundspal.svg"
+                alt="Soundspal Logo"
                 width={120}
                 height={32}
                 className="h-6 w-auto"

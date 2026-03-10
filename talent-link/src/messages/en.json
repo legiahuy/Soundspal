@@ -49,7 +49,7 @@
     "privacy": "Privacy",
     "connect": "Connect",
     "feedback": "Feedback",
-    "copyright": "© 2025 TalentLink. All rights reserved."
+    "copyright": "© 2025 Soundspal. All rights reserved."
   },
   "LanguageSwitcher": {
     "action": "Select Language",
@@ -61,12 +61,12 @@
       "title": "Connect Talent. Build Careers. Create Success.",
       "description": "Join thousands of professionals who have found their dream opportunities through our platform. Your next career move starts here.",
       "imageAlt": "Image",
-      "logoAlt": "TalentLink Logo"
+      "logoAlt": "Soundspal Logo"
     },
     "login": {
       "pageTitle": "Login",
       "title": "Welcome back",
-      "subtitle": "Log in to your TalentLink account",
+      "subtitle": "Log in to your Soundspal account",
       "email": "Email or Username",
       "emailPlaceholder": "Email or username",
       "emailInvalid": "Please enter a valid email or username",
@@ -83,7 +83,7 @@
     },
     "signup": {
       "pageTitle": "Signup",
-      "title": "Create TalentLink account",
+      "title": "Create Soundspal account",
       "subtitle": "Welcome! Sign up to get started!",
       "displayname": "Your name",
       "displaynamePlaceholder": "What do people call you?",
@@ -229,7 +229,7 @@
       "noResults": "No featured jobs available"
     },
     "features": {
-      "title": "Why Choose TalentLink?",
+      "title": "Why Choose Soundspal?",
       "subtitle": "The most professional and efficient connection platform",
       "diverseGenres": {
         "title": "Diverse Genres",
@@ -257,7 +257,7 @@
     },
     "mission": {
       "title": "Our Mission",
-      "description": "At TalentLink, we believe that every artist deserves a stage and every venue deserves great performances. Our platform eliminates the barriers between talent and opportunity by providing a seamless, transparent, and professional marketplace for the music industry."
+      "description": "At Soundspal, we believe that every artist deserves a stage and every venue deserves great performances. Our platform eliminates the barriers between talent and opportunity by providing a seamless, transparent, and professional marketplace for the music industry."
     },
     "values": {
       "title": "Our Core Values",
@@ -713,7 +713,7 @@
     "back": "Go Back",
     "backToHome": "Back to Home",
     "exploreJobs": "Explore Jobs",
-    "logoAlt": "TalentLink Logo"
+    "logoAlt": "Soundspal Logo"
   },
   "SearchPage": {
     "title": "Search Results",
