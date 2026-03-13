@@ -12,6 +12,28 @@ import type { Media, MediaListResponse } from '@/types/media'
 // Check if we should use mock data
 const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_ADMIN_DATA === 'true'
 
+// Helper to upload image trying multiple field names for backend compatibility
+async function uploadImageWithFieldFallback(
+  endpoint: string,
+  file: File,
+  fieldNames: string[],
+): Promise<string> {
+  let lastErr: unknown
+  for (const field of fieldNames) {
+    try {
+      const form = new FormData()
+      form.append(field, file)
+      const res = await axiosClient.post(endpoint, form)
+      const data = res.data?.data ?? res.data
+      return data?.url ?? data?.file_url ?? data?.path ?? ''
+    } catch (e) {
+      lastErr = e
+      continue
+    }
+  }
+  throw lastErr
+}
+
 export const adminService = {
   // ===== FEATURED USERS =====
 
@@ -74,39 +96,19 @@ export const adminService = {
   // ===== ADMIN MEDIA MANAGEMENT =====
 
   uploadUserAvatar: async (userId: string, file: File): Promise<string> => {
-    const tryFields = ['file', 'avatar', 'image']
-    let lastErr: unknown
-    for (const field of tryFields) {
-      try {
-        const form = new FormData()
-        form.append(field, file)
-        const res = await axiosClient.post(`/admin/users/${userId}/avatar`, form)
-        const data = res.data?.data ?? res.data
-        return data?.url ?? data?.file_url ?? data?.path ?? ''
-      } catch (e) {
-        lastErr = e
-        continue
-      }
-    }
-    throw lastErr
+    return uploadImageWithFieldFallback(
+      `/admin/users/${userId}/avatar`,
+      file,
+      ['file', 'avatar', 'image'],
+    )
   },
 
   uploadUserCover: async (userId: string, file: File): Promise<string> => {
-    const tryFields = ['file', 'cover', 'image']
-    let lastErr: unknown
-    for (const field of tryFields) {
-      try {
-        const form = new FormData()
-        form.append(field, file)
-        const res = await axiosClient.post(`/admin/users/${userId}/cover`, form)
-        const data = res.data?.data ?? res.data
-        return data?.url ?? data?.file_url ?? data?.path ?? ''
-      } catch (e) {
-        lastErr = e
-        continue
-      }
-    }
-    throw lastErr
+    return uploadImageWithFieldFallback(
+      `/admin/users/${userId}/cover`,
+      file,
+      ['file', 'cover', 'image'],
+    )
   },
 
   uploadUserMedia: async (userId: string, file: File): Promise<Media> => {
