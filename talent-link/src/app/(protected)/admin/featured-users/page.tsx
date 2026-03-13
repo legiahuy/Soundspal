@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { AdminUserCard } from '@/components/admin/AdminUserCard'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import { SearchUsersDialog } from '@/components/admin/SearchUsersDialog'
+import { AdminMediaUploadDialog } from '@/components/admin/AdminMediaUploadDialog'
 import { ChevronLeft, ChevronRight, Users as UsersIcon, Plus } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import type { FeaturedUser } from '@/types/admin'
@@ -19,6 +20,8 @@ export default function FeaturedUsersPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false)
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false)
+  const [mediaDialogUser, setMediaDialogUser] = useState<FeaturedUser | null>(null)
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
@@ -90,6 +93,11 @@ export default function FeaturedUsersPage() {
     } finally {
       setActionLoading(null)
     }
+  }
+
+  const handleManageMedia = (user: FeaturedUser) => {
+    setMediaDialogUser(user)
+    setMediaDialogOpen(true)
   }
 
   const totalPages = Math.ceil(pagination.total / pagination.limit)
@@ -195,6 +203,7 @@ export default function FeaturedUsersPage() {
               <AdminUserCard
                 user={user}
                 onFeatureToggle={handleFeatureToggle}
+                onManageMedia={handleManageMedia}
                 isLoading={actionLoading === user.id}
               />
             </motion.div>
@@ -282,6 +291,14 @@ export default function FeaturedUsersPage() {
           fetchUsers()
           setSearchDialogOpen(false)
         }}
+      />
+
+      {/* Media Upload Dialog */}
+      <AdminMediaUploadDialog
+        open={mediaDialogOpen}
+        onOpenChange={setMediaDialogOpen}
+        user={mediaDialogUser}
+        onMediaUpdated={() => fetchUsers()}
       />
     </div>
   )
