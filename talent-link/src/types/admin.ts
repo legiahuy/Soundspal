@@ -90,6 +90,7 @@ export interface AdminUser {
   email?: string
   display_name: string
   avatar_url?: string
+  cover_url?: string
   role: string
   brief_bio?: string
   detail_bio?: string
@@ -150,4 +151,12 @@ export interface AdminSearchParams {
   q?: string
   page?: number
   page_size?: number
+}
+
+// ===== ADMIN MEDIA MANAGEMENT =====
+
+export interface AdminMediaUploadResponse {
+  url?: string
+  file_url?: string
+  path?: string
 }

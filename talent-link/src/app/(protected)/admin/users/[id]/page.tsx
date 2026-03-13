@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -21,9 +21,15 @@ import {
   Trash2,
   Globe,
   ExternalLink,
+  Camera,
+  ImageIcon,
+  Upload,
+  X,
+  Loader2,
 } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import type { AdminUser } from '@/types/admin'
+import type { Media } from '@/types/media'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
@@ -48,6 +54,14 @@ export default function AdminUserDetailPage() {
   const [user, setUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
+  const [mediaList, setMediaList] = useState<Media[]>([])
+  const [mediaLoading, setMediaLoading] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [mediaUploading, setMediaUploading] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const mediaInputRef = useRef<HTMLInputElement>(null)
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     title: string
@@ -80,6 +94,96 @@ export default function AdminUserDetailPage() {
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
+
+  const fetchMedia = useCallback(async () => {
+    setMediaLoading(true)
+    try {
+      const response = await adminService.getUserMedia(userId)
+      setMediaList(response.media)
+    } catch (error) {
+      console.error('Failed to fetch user media:', error)
+    } finally {
+      setMediaLoading(false)
+    }
+  }, [userId])
+
+  useEffect(() => {
+    fetchMedia()
+  }, [fetchMedia])
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarUploading(true)
+    try {
+      await adminService.uploadUserAvatar(userId, file)
+      toast.success(t('successAvatarUploaded'))
+      await fetchUser()
+    } catch (error) {
+      console.error('Failed to upload avatar:', error)
+      toast.error(t('errorMediaUpload'))
+    } finally {
+      setAvatarUploading(false)
+      if (avatarInputRef.current) avatarInputRef.current.value = ''
+    }
+  }
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverUploading(true)
+    try {
+      await adminService.uploadUserCover(userId, file)
+      toast.success(t('successCoverUploaded'))
+      await fetchUser()
+    } catch (error) {
+      console.error('Failed to upload cover:', error)
+      toast.error(t('errorMediaUpload'))
+    } finally {
+      setCoverUploading(false)
+      if (coverInputRef.current) coverInputRef.current.value = ''
+    }
+  }
+
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setMediaUploading(true)
+    try {
+      await adminService.uploadUserMedia(userId, file)
+      toast.success(t('successMediaUploaded'))
+      await fetchMedia()
+    } catch (error) {
+      console.error('Failed to upload media:', error)
+      toast.error(t('errorMediaUpload'))
+    } finally {
+      setMediaUploading(false)
+      if (mediaInputRef.current) mediaInputRef.current.value = ''
+    }
+  }
+
+  const handleMediaDelete = (mediaItem: Media) => {
+    setConfirmDialog({
+      open: true,
+      title: t('deleteMedia'),
+      description: t('deleteMediaConfirm'),
+      confirmText: t('deleteMediaAction'),
+      variant: 'destructive',
+      action: async () => {
+        setActionLoading(true)
+        try {
+          await adminService.deleteUserMedia(userId, mediaItem.id)
+          toast.success(t('successMediaDeleted'))
+          await fetchMedia()
+        } catch (error) {
+          console.error('Failed to delete media:', error)
+          toast.error(t('errorMediaDelete'))
+        } finally {
+          setActionLoading(false)
+        }
+      },
+    })
+  }
 
   const handleRoleChange = (newRole: string) => {
     if (!user || newRole === user.role) return
@@ -196,6 +300,7 @@ export default function AdminUserDetailPage() {
   }
 
   const avatarUrl = user?.avatar_url ? resolveMediaUrl(user.avatar_url) : undefined
+  const coverUrl = user?.cover_url ? resolveMediaUrl(user.cover_url) : undefined
 
   if (loading) {
     return (
@@ -258,7 +363,7 @@ export default function AdminUserDetailPage() {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar */}
               <div className="flex-shrink-0">
-                <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 ring-2 ring-border/50">
+                <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 ring-2 ring-border/50 group/avatar">
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
@@ -271,6 +376,25 @@ export default function AdminUserDetailPage() {
                       {(user.display_name || user.username || '?').charAt(0).toUpperCase()}
                     </div>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer rounded-full"
+                  >
+                    {avatarUploading ? (
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    ) : (
+                      <Camera className="w-6 h-6 text-white" />
+                    )}
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                  />
                 </div>
               </div>
 
@@ -505,6 +629,153 @@ export default function AdminUserDetailPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Media Management Section - Full Width */}
+      <motion.div
+        className="mt-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45, duration: 0.5 }}
+      >
+        <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-primary" />
+              {t('mediaManagement')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Cover Photo */}
+            <div>
+              <h4 className="text-sm font-medium mb-3">{t('coverPhoto')}</h4>
+              <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gradient-to-br from-muted/50 to-muted/30 border border-border/50">
+                {coverUrl ? (
+                  <Image
+                    src={coverUrl}
+                    alt="Cover photo"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 transition-colors group/cover">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={coverUploading}
+                    className="opacity-0 group-hover/cover:opacity-100 transition-opacity"
+                  >
+                    {coverUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {t('uploading')}
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4 mr-2" />
+                        {coverUrl ? t('changeCover') : t('uploadCover')}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverUpload}
+              />
+            </div>
+
+            {/* Portfolio Media Gallery */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium">
+                  {t('portfolioMedia')}
+                  {mediaList.length > 0 && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({t('mediaItems', { count: mediaList.length })})
+                    </span>
+                  )}
+                </h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => mediaInputRef.current?.click()}
+                  disabled={mediaUploading}
+                >
+                  {mediaUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t('uploading')}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {t('uploadMedia')}
+                    </>
+                  )}
+                </Button>
+                <input
+                  ref={mediaInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleMediaUpload}
+                />
+              </div>
+
+              {mediaLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-lg border border-border/50 bg-card/50 animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : mediaList.length === 0 ? (
+                <div className="text-center py-12 rounded-lg border border-dashed border-border/50 bg-muted/10">
+                  <ImageIcon className="w-10 h-10 mx-auto mb-3 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">{t('noPortfolioMedia')}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {mediaList.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group/media relative aspect-square rounded-lg overflow-hidden border border-border/50 bg-muted/10"
+                    >
+                      <Image
+                        src={resolveMediaUrl(item.file_url)}
+                        alt={item.file_name}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover/media:bg-black/40 transition-colors flex items-center justify-center">
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="opacity-0 group-hover/media:opacity-100 transition-opacity h-8 w-8"
+                          onClick={() => handleMediaDelete(item)}
+                          disabled={actionLoading}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Confirm Dialog */}
       <ConfirmDialog

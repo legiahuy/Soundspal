@@ -11,6 +11,7 @@ import type {
   AdminUserListParams,
   AdminActionResponse,
 } from '@/types/admin'
+import type { Media, MediaListResponse } from '@/types/media'
 
 // Check if we should use mock data
 const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_ADMIN_DATA === 'true'
@@ -123,5 +124,44 @@ export const adminService = {
   deleteUser: async (userId: string): Promise<AdminActionResponse> => {
     const res = await axiosClient.delete(`/admin/users/${userId}`)
     return res.data
+  },
+
+  // ===== ADMIN MEDIA MANAGEMENT =====
+
+  uploadUserAvatar: async (userId: string, file: File): Promise<string> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await axiosClient.post(`/admin/users/${userId}/avatar`, form)
+    const data = res.data?.data ?? res.data
+    return data?.url ?? data?.file_url ?? data?.path ?? ''
+  },
+
+  uploadUserCover: async (userId: string, file: File): Promise<string> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await axiosClient.post(`/admin/users/${userId}/cover`, form)
+    const data = res.data?.data ?? res.data
+    return data?.url ?? data?.file_url ?? data?.path ?? ''
+  },
+
+  uploadUserMedia: async (userId: string, file: File): Promise<Media> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await axiosClient.post(`/admin/users/${userId}/media`, form)
+    return res.data?.data ?? res.data
+  },
+
+  deleteUserMedia: async (userId: string, mediaId: string): Promise<AdminActionResponse> => {
+    const res = await axiosClient.delete(`/admin/users/${userId}/media/${mediaId}`)
+    return res.data
+  },
+
+  getUserMedia: async (userId: string): Promise<MediaListResponse> => {
+    const res = await axiosClient.get(`/admin/users/${userId}/media`)
+    const data = res.data?.data ?? res.data
+    return {
+      media: data?.media ?? [],
+      total: data?.total ?? data?.media?.length ?? 0,
+    }
   },
 }
