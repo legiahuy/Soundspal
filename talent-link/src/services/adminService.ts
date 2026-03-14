@@ -6,6 +6,10 @@ import type {
   FeaturedJobsResponse,
   FeatureActionResponse,
   AdminPaginationParams,
+  AdminUser,
+  AdminUsersResponse,
+  AdminUserParams,
+  AdminUserActionResponse,
 } from '@/types/admin'
 import type { Media, MediaListResponse } from '@/types/media'
 

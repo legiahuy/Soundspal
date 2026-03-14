@@ -505,7 +505,9 @@
       "featuredJobs": "Việc làm nổi bật",
       "total": "Tổng số",
       "usersDescription": "Nghệ sĩ và nhà sản xuất được hiển thị trên trang chủ",
-      "jobsDescription": "Cơ hội việc làm được làm nổi bật trên trang chủ"
+      "jobsDescription": "Cơ hội việc làm được làm nổi bật trên trang chủ",
+      "totalUsers": "Tổng người dùng",
+      "totalUsersDescription": "Tất cả người dùng đã đăng ký trên nền tảng"
     },
     "manageUsers": "Quản lý người dùng",
     "manageJobs": "Quản lý việc làm",
@@ -523,7 +525,8 @@
     "sidebar": {
       "overview": "Tổng quan",
       "featuredUsers": "Người dùng nổi bật",
-      "featuredJobs": "Việc làm nổi bật"
+      "featuredJobs": "Việc làm nổi bật",
+      "users": "Quản lý người dùng"
     },
     "featuredUsersPage": {
       "title": "Người dùng nổi bật",

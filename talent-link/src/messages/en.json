@@ -505,7 +505,9 @@
       "featuredJobs": "Featured Jobs",
       "total": "Total",
       "usersDescription": "Artists and producers displayed on the landing page",
-      "jobsDescription": "Job opportunities highlighted on the landing page"
+      "jobsDescription": "Job opportunities highlighted on the landing page",
+      "totalUsers": "Total Users",
+      "totalUsersDescription": "All registered users on the platform"
     },
     "manageUsers": "Manage Users",
     "manageJobs": "Manage Jobs",
@@ -523,7 +525,8 @@
     "sidebar": {
       "overview": "Overview",
       "featuredUsers": "Featured Users",
-      "featuredJobs": "Featured Jobs"
+      "featuredJobs": "Featured Jobs",
+      "users": "User Management"
     },
     "featuredUsersPage": {
       "title": "Featured Users",
