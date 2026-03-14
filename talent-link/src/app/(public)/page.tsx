@@ -6,9 +6,9 @@ import { FeaturedUser, FeaturedJob } from '@/types/admin'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'TalentLink - Connect with Top Talent & Opportunities',
+  title: 'Soundspal - Connect with Top Talent & Opportunities',
   description:
-    'Find the best artists, venues, and creative jobs. Join TalentLink today to showcase your portfolio or hire top talent.',
+    'Find the best artists, venues, and creative jobs. Join Soundspal today to showcase your portfolio or hire top talent.',
 }
 
 export default async function LandingPage() {

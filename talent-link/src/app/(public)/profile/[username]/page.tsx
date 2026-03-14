@@ -31,14 +31,14 @@ export async function generateMetadata({
   }
 
   const displayName = user.display_name || username
-  const description = user.brief_bio || `Check out ${displayName}'s profile on TalentLink.`
+  const description = user.brief_bio || `Check out ${displayName}'s profile on Soundspal.`
   const images = user.avatar_url ? [resolveMediaUrl(user.avatar_url)] : []
 
   return {
-    title: `${displayName} | TalentLink`,
+    title: `${displayName} | Soundspal`,
     description,
     openGraph: {
-      title: `${displayName} | TalentLink`,
+      title: `${displayName} | Soundspal`,
       description,
       images,
       type: 'profile',
@@ -46,7 +46,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary',
-      title: `${displayName} | TalentLink`,
+      title: `${displayName} | Soundspal`,
       description,
       images,
     },
