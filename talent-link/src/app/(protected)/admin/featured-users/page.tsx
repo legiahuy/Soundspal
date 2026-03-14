@@ -46,7 +46,8 @@ export default function FeaturedUsersPage() {
         limit: pagination.limit,
         offset: pagination.offset,
       })
-      setUsers(response.data.users)
+      const usersData = response.data.users
+      setUsers(Array.isArray(usersData) ? usersData : (usersData?.users || []))
       setPagination((prev) => ({
         ...prev,
         total: response.data.total,
@@ -135,7 +136,7 @@ export default function FeaturedUsersPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
             {t('title')}
           </h1>
           <Button onClick={() => setSearchDialogOpen(true)} className="gap-2">

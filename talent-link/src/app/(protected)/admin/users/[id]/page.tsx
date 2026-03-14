@@ -220,7 +220,7 @@ export default function AdminUserDetailPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
           {t('title')}
         </h1>
       </motion.div>
@@ -236,7 +236,7 @@ export default function AdminUserDetailPage() {
           <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
             <CardContent className="p-6 flex flex-col items-center text-center gap-4">
               {/* Avatar */}
-              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 ring-4 ring-border/50">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-linear-to-br from-primary/20 to-primary/10 ring-4 ring-border/50">
                 {user.avatar_url ? (
                   <Image
                     src={user.avatar_url}

@@ -9,7 +9,6 @@ import { AdminJobCard } from './AdminJobCard'
 // We might need to map between search result and FeaturedJob, as the types might slightly differ.
 // Assuming FeaturedJob is compatible or we cast it for now.
 import type { FeaturedJob } from '@/types/admin'
-import type { JobPostSearchDto } from '@/types/search'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -21,31 +20,32 @@ interface SearchJobsDialogProps {
 }
 
 // Helper to map search result to AdminJobCard prop type if needed
-const mapSearchResultToFeaturedJob = (job: JobPostSearchDto): FeaturedJob => {
+const mapSearchResultToFeaturedJob = (job: Record<string, unknown>): FeaturedJob => {
   return {
     id: job.id,
     title: job.title,
-    post_type: job.postType as 'job' | 'collaboration' | 'event',
-    status: job.status as 'open' | 'closed' | 'filled' | 'cancelled' | 'draft',
-    visibility: job.visibility as 'public' | 'private' | 'connections',
-    creator_id: job.creatorId,
-    creator_role: job.creatorRole,
-    creator_username: job.creatorUsername,
-    creator_name: job.creatorDisplayName,
-    creator_avatar: job.creatorAvatarUrl,
-    created_at: job.createdAt,
-    updated_at: job.updatedAt,
-    is_featured: false, // Search results shouldn't be featured yet normally, or we check
+    post_type: job.post_type || job.postType,
+    status: job.status,
+    visibility: job.visibility,
+    creator_id: job.creator_id || job.creatorId,
+    creator_role: job.creator_role || job.creatorRole,
+    creator_username: job.creator_username || job.creatorUsername,
+    creator_display_name: job.creator_display_name || job.creatorDisplayName || job.creator_name,
+    creator_avatar_url: job.creator_avatar_url || job.creatorAvatarUrl || job.creator_avatar,
+    created_at: job.created_at || job.createdAt,
+    updated_at: job.updated_at || job.updatedAt,
+    is_featured: job.is_featured || false,
     location: job.location,
-    brief_description: job.description, 
+    location_type: job.location_type || job.locationType,
+    brief_description: job.brief_description || job.description, 
     genres: job.genres,
-    budget_min: job.budgetMin,
-    budget_max: job.budgetMax,
-    budget_currency: job.budgetCurrency as 'VND' | 'USD',
-    views_count: job.viewsCount,
-    total_submissions: job.applicationsCount, // Assuming applications count
+    budget_min: job.budget_min || job.budgetMin,
+    budget_max: job.budget_max || job.budgetMax,
+    budget_currency: job.budget_currency || job.budgetCurrency as 'VND' | 'USD',
+    views_count: job.views_count || job.viewsCount,
+    total_submissions: job.total_submissions || job.applications_count || job.applicationsCount,
     deadline: job.deadline,
-    // Add other mapped fields as compatible
+    type: job.type,
   } as unknown as FeaturedJob
 }
 
@@ -76,8 +76,7 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
           pageSize: 50,
         })
         
-        // Map search results to FeaturedJob type for the card
-        const mappedJobs = response.jobPosts.map(mapSearchResultToFeaturedJob)
+        const mappedJobs = response.jobPosts.map(j => mapSearchResultToFeaturedJob(j as unknown as Record<string, unknown>))
         setResults(mappedJobs)
       } catch (error) {
         console.error('Search failed:', error)
@@ -157,15 +156,7 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
     }
   }
 
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-      },
-    },
-  }
+  // Remove unused staggerContainer
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -174,7 +165,7 @@ export function SearchJobsDialog({ open, onOpenChange, onJobFeatured }: SearchJo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[80vw] w-full h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
+      <DialogContent className="max-w-[80vw]! w-full h-[90vh] overflow-hidden flex flex-col border-border/50 bg-card/95 backdrop-blur-md p-0 gap-0">
         <DialogHeader className="p-6 pb-2 border-b border-border/50">
           <DialogTitle className="text-2xl">Search Jobs to Feature</DialogTitle>
         </DialogHeader>

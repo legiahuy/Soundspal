@@ -70,7 +70,7 @@ export function AdminJobCard({
           </h3>
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline" className="capitalize border-primary/30 text-primary">
-              {job.post_type.replace('_', ' ')}
+              {job.post_type?.replace('_', ' ') || 'Unknown'}
             </Badge>
             {job.type && (
               <Badge variant="secondary" className="capitalize">
@@ -167,7 +167,7 @@ export function AdminJobCard({
         </div>
 
         {/* Spacer to push button to bottom */}
-        <div className="flex-grow" />
+        <div className="grow" />
 
         {/* Action Button */}
         {/* Action Button - Only show if not selectable */}

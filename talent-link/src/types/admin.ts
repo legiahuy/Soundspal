@@ -19,7 +19,7 @@ export interface FeaturedUser {
 
 export interface FeaturedUsersResponse {
   data: {
-    users: FeaturedUser[]
+    users: FeaturedUser[] | { users: FeaturedUser[]; total: number }
     total: number
     limit: number
     offset: number
@@ -112,7 +112,7 @@ export interface AdminUser {
 
 export interface AdminUsersResponse {
   data: {
-    users: AdminUser[]
+    users: AdminUser[] | { users: AdminUser[]; total: number }
     total: number
     limit: number
     offset: number
