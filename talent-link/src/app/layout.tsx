@@ -22,8 +22,8 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://link.talent.vn'),
   title: {
-    template: '%s | TalentLink',
-    default: 'TalentLink - Connect with Top Music Talent & Venues',
+    template: '%s | Soundspal',
+    default: 'Soundspal - Connect with Top Music Talent & Venues',
   },
   description:
     'The premier platform connecting independent music artists with venues and organizers. Find gigs, hire talent, and build your music career.',
@@ -39,13 +39,13 @@ export const metadata: Metadata = {
     'singer',
     'producer',
   ],
-  authors: [{ name: 'TalentLink Team' }],
+  authors: [{ name: 'Soundspal Team' }],
   openGraph: {
-    title: 'TalentLink - Connect with Top Music Talent & Venues',
+    title: 'Soundspal - Connect with Top Music Talent & Venues',
     description:
       'The premier platform connecting independent music artists with venues and organizers.',
     url: 'https://link.talent.vn',
-    siteName: 'TalentLink',
+    siteName: 'Soundspal',
     locale: 'vi_VN',
     type: 'website',
     images: [
@@ -53,13 +53,13 @@ export const metadata: Metadata = {
         url: '/og-image.jpg', // Ensure this exists or use a default
         width: 1200,
         height: 630,
-        alt: 'TalentLink - Music Talent Platform',
+        alt: 'Soundspal - Music Talent Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TalentLink - Connect with Top Music Talent & Venues',
+    title: 'Soundspal - Connect with Top Music Talent & Venues',
     description:
       'The premier platform connecting independent music artists with venues and organizers.',
     images: ['/og-image.jpg'], // Same as OG

@@ -120,8 +120,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="mb-8 px-4">
                 <Link href="/">
                   <Image
-                    src="/TalentLink.svg"
-                    alt="TalentLink Logo"
+                    src="/Soundspal.svg"
+                    alt="Soundspal Logo"
                     width={120}
                     height={32}
                     className="h-8 w-auto"

@@ -6,7 +6,8 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Discover Talent',
-  description: 'Connect with top creative talent and venues. Explore profiles of producers, singers, and venues on TalentLink.',
+  description:
+    'Connect with top creative talent and venues. Explore profiles of producers, singers, and venues on Soundspal.',
 }
 
 interface DiscoveryItem {

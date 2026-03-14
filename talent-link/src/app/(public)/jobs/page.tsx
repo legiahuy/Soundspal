@@ -6,7 +6,7 @@ import { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Find Jobs',
   description:
-    'Browse the latest creative jobs, auditions, and gigs. Find your next opportunity in the entertainment industry on TalentLink.',
+    'Browse the latest creative jobs, auditions, and gigs. Find your next opportunity in the entertainment industry on Soundspal.',
 }
 
 export default async function JobPoolPage() {

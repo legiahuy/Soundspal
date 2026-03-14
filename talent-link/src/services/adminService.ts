@@ -11,9 +11,32 @@ import type {
   AdminUserParams,
   AdminUserActionResponse,
 } from '@/types/admin'
+import type { Media, MediaListResponse } from '@/types/media'
 
 // Check if we should use mock data
 const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_ADMIN_DATA === 'true'
+
+// Helper to upload image trying multiple field names for backend compatibility
+async function uploadImageWithFieldFallback(
+  endpoint: string,
+  file: File,
+  fieldNames: string[],
+): Promise<string> {
+  let lastErr: unknown
+  for (const field of fieldNames) {
+    try {
+      const form = new FormData()
+      form.append(field, file)
+      const res = await axiosClient.post(endpoint, form)
+      const data = res.data?.data ?? res.data
+      return data?.url ?? data?.file_url ?? data?.path ?? ''
+    } catch (e) {
+      lastErr = e
+      continue
+    }
+  }
+  throw lastErr
+}
 
 export const adminService = {
   // ===== FEATURED USERS =====
@@ -74,26 +97,66 @@ export const adminService = {
     return res.data.data || []
   },
 
+  // ===== ADMIN MEDIA MANAGEMENT =====
+
+  uploadUserAvatar: async (userId: string, file: File): Promise<string> => {
+    return uploadImageWithFieldFallback(
+      `/admin/users/${userId}/avatar`,
+      file,
+      ['file', 'avatar', 'image'],
+    )
+  },
+
+  uploadUserCover: async (userId: string, file: File): Promise<string> => {
+    return uploadImageWithFieldFallback(
+      `/admin/users/${userId}/cover`,
+      file,
+      ['file', 'cover', 'image'],
+    )
+  },
+
+  uploadUserMedia: async (userId: string, file: File): Promise<Media> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await axiosClient.post(`/admin/users/${userId}/media`, form)
+    return res.data?.data ?? res.data
+  },
+
+  deleteUserMedia: async (userId: string, mediaId: string): Promise<void> => {
+    await axiosClient.delete(`/admin/users/${userId}/media/${mediaId}`)
+  },
+
+  getUserMedia: async (userId: string): Promise<MediaListResponse> => {
+    const res = await axiosClient.get(`/admin/users/${userId}/media`)
+    const data = res.data?.data ?? res.data
+    return {
+      media: data?.media ?? [],
+      total: data?.total ?? data?.media?.length ?? 0,
+    }
+  },
+
+  // ===== UTILITY =====
+
+  isMockMode: (): boolean => {
+    return useMockData
+  },
+
   // ===== USER MANAGEMENT =====
 
   listUsers: async (params?: AdminUserParams): Promise<AdminUsersResponse> => {
-    const { limit = 20, offset = 0, role, search, status } = params || {}
-
+    const { limit = 20, offset = 0, role, search } = params || {}
     const res = await axiosClient.get('/admin/users', {
-      params: { limit, offset, role, search, status },
+      params: { limit, offset, ...(role && { role }), ...(search && { search }) },
     })
     return res.data
   },
 
-  getUser: async (userId: string): Promise<{ data: AdminUser }> => {
+  getUser: async (userId: string): Promise<AdminUser> => {
     const res = await axiosClient.get(`/admin/users/${userId}`)
-    return res.data
+    return res.data.data ?? res.data
   },
 
-  updateUserRole: async (
-    userId: string,
-    role: string,
-  ): Promise<AdminUserActionResponse> => {
+  updateUserRole: async (userId: string, role: string): Promise<AdminUserActionResponse> => {
     const res = await axiosClient.put(`/admin/users/${userId}/role`, { role })
     return res.data
   },
@@ -104,7 +167,7 @@ export const adminService = {
   },
 
   unbanUser: async (userId: string): Promise<AdminUserActionResponse> => {
-    const res = await axiosClient.delete(`/admin/users/${userId}/ban`)
+    const res = await axiosClient.put(`/admin/users/${userId}/unban`)
     return res.data
   },
 
@@ -114,13 +177,12 @@ export const adminService = {
   },
 
   unverifyUser: async (userId: string): Promise<AdminUserActionResponse> => {
-    const res = await axiosClient.delete(`/admin/users/${userId}/verify`)
+    const res = await axiosClient.put(`/admin/users/${userId}/unverify`)
     return res.data
   },
 
-  // ===== UTILITY =====
-
-  isMockMode: (): boolean => {
-    return useMockData
+  deleteUser: async (userId: string): Promise<AdminUserActionResponse> => {
+    const res = await axiosClient.delete(`/admin/users/${userId}`)
+    return res.data
   },
 }

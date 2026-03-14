@@ -68,7 +68,8 @@ export default function AdminUsersPage() {
         search: debouncedSearch || undefined,
         status: statusFilter || undefined,
       })
-      setUsers(response.data.users)
+      const usersData = response.data.users
+      setUsers(Array.isArray(usersData) ? usersData : (usersData?.users || []))
       setPagination((prev) => ({
         ...prev,
         total: response.data.total,
@@ -216,7 +217,7 @@ export default function AdminUsersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent mb-2">
           {t('title')}
         </h1>
         <p className="text-muted-foreground text-lg">{t('subtitle')}</p>
@@ -326,7 +327,7 @@ export default function AdminUsersPage() {
                 <CardContent className="p-4 flex flex-col h-full gap-3">
                   {/* User Avatar & Info */}
                   <div className="flex flex-col items-center text-center gap-2 mb-2">
-                    <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex-shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden bg-linear-to-br from-primary/20 to-primary/10 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
                       {user.avatar_url ? (
                         <Image
                           src={user.avatar_url}
@@ -405,7 +406,7 @@ export default function AdminUsersPage() {
                   )}
 
                   {/* Spacer */}
-                  <div className="flex-grow" />
+                  <div className="grow" />
 
                   {/* Actions */}
                   <div className="flex gap-2">

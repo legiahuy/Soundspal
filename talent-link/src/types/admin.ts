@@ -19,7 +19,7 @@ export interface FeaturedUser {
 
 export interface FeaturedUsersResponse {
   data: {
-    users: FeaturedUser[]
+    users: FeaturedUser[] | { users: FeaturedUser[]; total: number }
     total: number
     limit: number
     offset: number
@@ -112,7 +112,7 @@ export interface AdminUser {
 
 export interface AdminUsersResponse {
   data: {
-    users: AdminUser[]
+    users: AdminUser[] | { users: AdminUser[]; total: number }
     total: number
     limit: number
     offset: number
@@ -136,6 +136,10 @@ export interface FeatureActionResponse {
   message: string
 }
 
+export interface AdminActionResponse {
+  message: string
+}
+
 // Pagination & Filter Types
 export interface AdminPaginationParams {
   limit?: number
@@ -146,4 +150,12 @@ export interface AdminSearchParams {
   q?: string
   page?: number
   page_size?: number
+}
+
+// ===== ADMIN MEDIA MANAGEMENT =====
+
+export interface AdminMediaUploadResponse {
+  url?: string
+  file_url?: string
+  path?: string
 }

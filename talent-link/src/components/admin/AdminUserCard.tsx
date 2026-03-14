@@ -4,20 +4,21 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { MapPin, CheckCircle2, Circle } from 'lucide-react'
+import { MapPin, CheckCircle2, Circle, ImageIcon } from 'lucide-react'
 import type { FeaturedUser } from '@/types/admin'
 import { cn } from '@/lib/utils'
 
 interface AdminUserCardProps {
   user: FeaturedUser
   onFeatureToggle?: (userId: string, isFeatured: boolean) => void
+  onManageMedia?: (user: FeaturedUser) => void
   isLoading?: boolean
   selectable?: boolean
   selected?: boolean
   onSelect?: (userId: string) => void
 }
 
-export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, selected, onSelect }: AdminUserCardProps) {
+export function AdminUserCard({ user, onFeatureToggle, onManageMedia, isLoading, selectable, selected, onSelect }: AdminUserCardProps) {
   return (
     <Card 
       className={cn(
@@ -109,19 +110,37 @@ export function AdminUserCard({ user, onFeatureToggle, isLoading, selectable, se
 
         {/* Action Button */}
         {/* Action Button - Only show if not selectable */}
-        {!selectable && onFeatureToggle && (
-          <Button
-            onClick={(e) => {
-              e.stopPropagation()
-              onFeatureToggle(user.id, user.is_featured)
-            }}
-            disabled={isLoading}
-            variant={user.is_featured ? 'outline' : 'default'}
-            className="w-full group-hover:shadow-md transition-all"
-            size="sm"
-          >
-            {isLoading ? 'Processing...' : user.is_featured ? 'Unfeature' : 'Feature'}
-          </Button>
+        {!selectable && (
+          <div className="flex gap-2">
+            {onManageMedia && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onManageMedia(user)
+                }}
+                variant="outline"
+                className="flex-1 gap-1.5 group-hover:shadow-md transition-all"
+                size="sm"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                Media
+              </Button>
+            )}
+            {onFeatureToggle && (
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onFeatureToggle(user.id, user.is_featured)
+                }}
+                disabled={isLoading}
+                variant={user.is_featured ? 'outline' : 'default'}
+                className={cn(onManageMedia ? 'flex-1' : 'w-full', 'group-hover:shadow-md transition-all')}
+                size="sm"
+              >
+                {isLoading ? 'Processing...' : user.is_featured ? 'Unfeature' : 'Feature'}
+              </Button>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

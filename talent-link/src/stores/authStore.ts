@@ -217,7 +217,7 @@ export const useAuthStore = create<AuthState>()(
           // Track login event
           analytics.logLogin('email').catch(console.error)
 
-          toast.success('Welcome back to TalentLink!')
+          toast.success('Welcome back to Soundspal!')
 
           // if (typeof window !== 'undefined') {
           //   const targetUsername = get().user?.username || username

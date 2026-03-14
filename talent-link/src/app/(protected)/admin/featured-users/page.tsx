@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { AdminUserCard } from '@/components/admin/AdminUserCard'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import { SearchUsersDialog } from '@/components/admin/SearchUsersDialog'
+import { AdminMediaUploadDialog } from '@/components/admin/AdminMediaUploadDialog'
 import { ChevronLeft, ChevronRight, Users as UsersIcon, Plus } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import type { FeaturedUser } from '@/types/admin'
@@ -19,6 +20,8 @@ export default function FeaturedUsersPage() {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false)
+  const [mediaDialogOpen, setMediaDialogOpen] = useState(false)
+  const [mediaDialogUser, setMediaDialogUser] = useState<FeaturedUser | null>(null)
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
@@ -43,7 +46,8 @@ export default function FeaturedUsersPage() {
         limit: pagination.limit,
         offset: pagination.offset,
       })
-      setUsers(response.data.users)
+      const usersData = response.data.users
+      setUsers(Array.isArray(usersData) ? usersData : (usersData?.users || []))
       setPagination((prev) => ({
         ...prev,
         total: response.data.total,
@@ -92,6 +96,11 @@ export default function FeaturedUsersPage() {
     }
   }
 
+  const handleManageMedia = (user: FeaturedUser) => {
+    setMediaDialogUser(user)
+    setMediaDialogOpen(true)
+  }
+
   const totalPages = Math.ceil(pagination.total / pagination.limit)
   const currentPage = Math.floor(pagination.offset / pagination.limit) + 1
 
@@ -127,7 +136,7 @@ export default function FeaturedUsersPage() {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
             {t('title')}
           </h1>
           <Button onClick={() => setSearchDialogOpen(true)} className="gap-2">
@@ -195,6 +204,7 @@ export default function FeaturedUsersPage() {
               <AdminUserCard
                 user={user}
                 onFeatureToggle={handleFeatureToggle}
+                onManageMedia={handleManageMedia}
                 isLoading={actionLoading === user.id}
               />
             </motion.div>
@@ -282,6 +292,14 @@ export default function FeaturedUsersPage() {
           fetchUsers()
           setSearchDialogOpen(false)
         }}
+      />
+
+      {/* Media Upload Dialog */}
+      <AdminMediaUploadDialog
+        open={mediaDialogOpen}
+        onOpenChange={setMediaDialogOpen}
+        user={mediaDialogUser}
+        onMediaUpdated={() => fetchUsers()}
       />
     </div>
   )
