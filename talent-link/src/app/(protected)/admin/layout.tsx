@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '@/stores/authStore'
-import { LayoutDashboard, Users, Briefcase } from 'lucide-react'
+import { LayoutDashboard, Users, Briefcase, UserCog } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -71,6 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: t('sidebar.overview'),
       icon: LayoutDashboard,
       exact: true,
+    },
+    {
+      href: '/admin/users',
+      label: t('sidebar.userManagement'),
+      icon: UserCog,
     },
     {
       href: '/admin/featured-users',

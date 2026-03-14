@@ -82,8 +82,62 @@ export interface FeaturedJobsResponse {
   }
 }
 
+// ===== ADMIN USER MANAGEMENT =====
+
+export interface AdminUser {
+  id: string
+  username: string
+  email?: string
+  display_name: string
+  avatar_url?: string
+  cover_url?: string
+  role: string
+  brief_bio?: string
+  detail_bio?: string
+  city?: string
+  country?: string
+  genres?: Genre[]
+  is_verified: boolean
+  is_featured: boolean
+  status: string
+  facebook_url?: string
+  instagram_url?: string
+  youtube_url?: string
+  website_url?: string
+  created_at: string
+  updated_at?: string
+}
+
+export interface AdminUsersResponse {
+  data: {
+    users: AdminUser[]
+    total: number
+    limit: number
+    offset: number
+  }
+}
+
+export interface AdminUserDetailResponse {
+  data: AdminUser
+}
+
+export interface AdminUserListParams {
+  limit?: number
+  offset?: number
+  role?: string
+  search?: string
+}
+
+export interface AdminUserUpdateRolePayload {
+  role: string
+}
+
 // Action Response Types
 export interface FeatureActionResponse {
+  message: string
+}
+
+export interface AdminActionResponse {
   message: string
 }
 
@@ -97,4 +151,12 @@ export interface AdminSearchParams {
   q?: string
   page?: number
   page_size?: number
+}
+
+// ===== ADMIN MEDIA MANAGEMENT =====
+
+export interface AdminMediaUploadResponse {
+  url?: string
+  file_url?: string
+  path?: string
 }
