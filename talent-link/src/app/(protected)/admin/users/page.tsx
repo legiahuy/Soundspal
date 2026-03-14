@@ -1,45 +1,62 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { AdminUserManagementCard } from '@/components/admin/AdminUserManagementCard'
+import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import {
   ChevronLeft,
   ChevronRight,
   Users as UsersIcon,
   Search,
+  Eye,
+  ShieldCheck,
+  ShieldOff,
+  Ban,
+  CheckCircle,
+  MapPin,
 } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import type { AdminUser } from '@/types/admin'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
+import { useDebounce } from '@/hooks/useDebounce'
+import { cn } from '@/lib/utils'
 
-const ROLES = ['all', 'singer', 'producer', 'venue', 'admin'] as const
+const ROLES = ['singer', 'producer', 'venue', 'admin'] as const
+const STATUSES = ['active', 'banned', 'inactive'] as const
 
 export default function AdminUsersPage() {
   const t = useTranslations('Admin.usersPage')
   const tCommon = useTranslations('Common')
   const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [selectedRole, setSelectedRole] = useState<string>('all')
+  const [roleFilter, setRoleFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 300)
   const [pagination, setPagination] = useState({
     total: 0,
     limit: 20,
     offset: 0,
   })
-
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery)
-      setPagination((prev) => ({ ...prev, offset: 0 }))
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean
+    userId: string
+    userName: string
+    action: 'ban' | 'unban' | 'verify' | 'unverify'
+  }>({
+    open: false,
+    userId: '',
+    userName: '',
+    action: 'ban',
+  })
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -47,8 +64,9 @@ export default function AdminUsersPage() {
       const response = await adminService.listUsers({
         limit: pagination.limit,
         offset: pagination.offset,
-        role: selectedRole !== 'all' ? selectedRole : undefined,
+        role: roleFilter || undefined,
         search: debouncedSearch || undefined,
+        status: statusFilter || undefined,
       })
       setUsers(response.data.users)
       setPagination((prev) => ({
@@ -61,15 +79,105 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false)
     }
-  }, [pagination.limit, pagination.offset, selectedRole, debouncedSearch, t])
+  }, [pagination.limit, pagination.offset, roleFilter, debouncedSearch, statusFilter, t])
 
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers])
 
-  const handleRoleFilter = (role: string) => {
-    setSelectedRole(role)
+  useEffect(() => {
     setPagination((prev) => ({ ...prev, offset: 0 }))
+  }, [debouncedSearch, roleFilter, statusFilter])
+
+  const handleAction = (userId: string, userName: string, action: 'ban' | 'unban' | 'verify' | 'unverify') => {
+    setConfirmDialog({ open: true, userId, userName, action })
+  }
+
+  const handleConfirmAction = async () => {
+    const { userId, action } = confirmDialog
+    setActionLoading(userId)
+    setConfirmDialog({ ...confirmDialog, open: false })
+
+    try {
+      switch (action) {
+        case 'ban':
+          await adminService.banUser(userId)
+          toast.success(t('successBanned'))
+          break
+        case 'unban':
+          await adminService.unbanUser(userId)
+          toast.success(t('successUnbanned'))
+          break
+        case 'verify':
+          await adminService.verifyUser(userId)
+          toast.success(t('successVerified'))
+          break
+        case 'unverify':
+          await adminService.unverifyUser(userId)
+          toast.success(t('successUnverified'))
+          break
+      }
+      await fetchUsers()
+    } catch (error) {
+      console.error('Failed to perform action:', error)
+      toast.error(t('errorAction'))
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const getConfirmDialogProps = () => {
+    const { action, userName } = confirmDialog
+    switch (action) {
+      case 'ban':
+        return {
+          title: t('banUser'),
+          description: t('banConfirm', { name: userName }),
+          variant: 'destructive' as const,
+        }
+      case 'unban':
+        return {
+          title: t('unbanUser'),
+          description: t('unbanConfirm', { name: userName }),
+          variant: 'default' as const,
+        }
+      case 'verify':
+        return {
+          title: t('verifyUser'),
+          description: t('verifyConfirm', { name: userName }),
+          variant: 'default' as const,
+        }
+      case 'unverify':
+        return {
+          title: t('unverifyUser'),
+          description: t('unverifyConfirm', { name: userName }),
+          variant: 'destructive' as const,
+        }
+    }
+  }
+
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'default'
+      case 'producer':
+        return 'secondary'
+      case 'singer':
+        return 'outline'
+      default:
+        return 'outline'
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'text-green-600 bg-green-500/10 border-green-500/20'
+      case 'banned':
+        return 'text-red-600 bg-red-500/10 border-red-500/20'
+      default:
+        return 'text-yellow-600 bg-yellow-500/10 border-yellow-500/20'
+    }
   }
 
   const totalPages = Math.ceil(pagination.total / pagination.limit)
@@ -97,6 +205,8 @@ export default function AdminUsersPage() {
     show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   }
 
+  const dialogProps = getConfirmDialogProps()
+
   return (
     <div>
       {/* Header */}
@@ -106,12 +216,10 @@ export default function AdminUsersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            {t('title')}
-          </h1>
-        </div>
-        <p className="text-muted-foreground text-lg">{t('description')}</p>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent mb-2">
+          {t('title')}
+        </h1>
+        <p className="text-muted-foreground text-lg">{t('subtitle')}</p>
       </motion.div>
 
       {/* Search & Filters */}
@@ -127,22 +235,33 @@ export default function AdminUsersPage() {
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-card/50 backdrop-blur-sm border-border/50"
+            className="pl-10 bg-card/70 backdrop-blur-sm border-border/50"
           />
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="h-9 rounded-md border border-border/50 bg-card/70 backdrop-blur-sm px-3 text-sm"
+        >
+          <option value="">{t('filterByRole')}</option>
           {ROLES.map((role) => (
-            <Button
-              key={role}
-              variant={selectedRole === role ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => handleRoleFilter(role)}
-              className="capitalize"
-            >
-              {role === 'all' ? t('allRoles') : role}
-            </Button>
+            <option key={role} value={role}>
+              {t(`role${role.charAt(0).toUpperCase() + role.slice(1)}` as 'roleSinger' | 'roleProducer' | 'roleVenue' | 'roleAdmin')}
+            </option>
           ))}
-        </div>
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="h-9 rounded-md border border-border/50 bg-card/70 backdrop-blur-sm px-3 text-sm"
+        >
+          <option value="">{t('filterByStatus')}</option>
+          {STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {t(`status${status.charAt(0).toUpperCase() + status.slice(1)}` as 'statusActive' | 'statusBanned' | 'statusInactive')}
+            </option>
+          ))}
+        </select>
       </motion.div>
 
       {/* Stats */}
@@ -187,6 +306,7 @@ export default function AdminUsersPage() {
         >
           <UsersIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
           <p className="text-muted-foreground text-lg">{t('noUsers')}</p>
+          <p className="text-muted-foreground text-sm mt-1">{t('noUsersDescription')}</p>
         </motion.div>
       ) : (
         <motion.div
@@ -197,7 +317,154 @@ export default function AdminUsersPage() {
         >
           {users.map((user) => (
             <motion.div key={user.id} variants={fadeInUp}>
-              <AdminUserManagementCard user={user} />
+              <Card
+                className={cn(
+                  'group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 min-h-[280px] h-full',
+                  user.status === 'banned' && 'opacity-75',
+                )}
+              >
+                <CardContent className="p-4 flex flex-col h-full gap-3">
+                  {/* User Avatar & Info */}
+                  <div className="flex flex-col items-center text-center gap-2 mb-2">
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex-shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
+                      {user.avatar_url ? (
+                        <Image
+                          src={user.avatar_url}
+                          alt={user.display_name || user.username}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary">
+                          {(user.display_name || user.username || '?').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="w-full">
+                      <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors mb-0.5">
+                        {user.display_name || user.username}
+                      </h3>
+                      <p className="text-xs text-muted-foreground truncate">@{user.username}</p>
+                    </div>
+                  </div>
+
+                  {/* Badges Row */}
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize text-xs">
+                      {user.role}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn('text-xs', getStatusColor(user.status))}
+                    >
+                      {user.status}
+                    </Badge>
+                    {user.is_verified && (
+                      <Badge variant="outline" className="text-xs text-blue-600 bg-blue-500/10 border-blue-500/20">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        {t('verified')}
+                      </Badge>
+                    )}
+                    {user.is_featured && (
+                      <Badge variant="outline" className="text-xs text-amber-600 bg-amber-500/10 border-amber-500/20">
+                        {t('featured')}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  {user.brief_bio && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{user.brief_bio}</p>
+                  )}
+
+                  {/* Location */}
+                  {(user.city || user.country) && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">
+                        {[user.city, user.country].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Genres */}
+                  {user.genres && user.genres.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {user.genres.slice(0, 3).map((genre) => (
+                        <Badge key={genre.id} variant="secondary" className="text-xs px-2 py-0">
+                          {genre.name}
+                        </Badge>
+                      ))}
+                      {user.genres.length > 3 && (
+                        <Badge variant="secondary" className="text-xs px-2 py-0">
+                          +{user.genres.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Spacer */}
+                  <div className="flex-grow" />
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 group-hover:bg-primary/10 transition-colors"
+                    >
+                      <Link href={`/admin/users/${user.id}`} className="flex items-center justify-center gap-1.5">
+                        <Eye className="w-3.5 h-3.5" />
+                        {t('viewDetails')}
+                      </Link>
+                    </Button>
+                    {user.status === 'banned' ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAction(user.id, user.display_name || user.username, 'unban')}
+                        disabled={actionLoading === user.id}
+                        className="hover:bg-green-500/10 hover:text-green-600 hover:border-green-500/30 transition-colors"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAction(user.id, user.display_name || user.username, 'ban')}
+                        disabled={actionLoading === user.id || user.role === 'admin'}
+                        className="hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/30 transition-colors"
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                    {user.is_verified ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAction(user.id, user.display_name || user.username, 'unverify')}
+                        disabled={actionLoading === user.id}
+                        className="hover:bg-yellow-500/10 hover:text-yellow-600 hover:border-yellow-500/30 transition-colors"
+                      >
+                        <ShieldOff className="w-3.5 h-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAction(user.id, user.display_name || user.username, 'verify')}
+                        disabled={actionLoading === user.id}
+                        className="hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-500/30 transition-colors"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
           ))}
         </motion.div>
@@ -259,6 +526,16 @@ export default function AdminUsersPage() {
           </Button>
         </motion.div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        title={dialogProps.title}
+        description={dialogProps.description}
+        onConfirm={handleConfirmAction}
+        variant={dialogProps.variant}
+      />
     </div>
   )
 }

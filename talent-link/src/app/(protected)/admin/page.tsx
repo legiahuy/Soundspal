@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, Briefcase, ArrowRight } from 'lucide-react'
+import { Users, Briefcase, ArrowRight, UserCog } from 'lucide-react'
 import { adminService } from '@/services/adminService'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
@@ -14,20 +14,23 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState({
     totalFeaturedUsers: 0,
     totalFeaturedJobs: 0,
+    totalUsers: 0,
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [usersRes, jobsRes] = await Promise.all([
+        const [usersRes, jobsRes, allUsersRes] = await Promise.all([
           adminService.listFeaturedUsers({ limit: 1, offset: 0 }),
           adminService.listFeaturedJobs({ limit: 1, offset: 0 }),
+          adminService.listUsers({ limit: 1, offset: 0 }),
         ])
 
         setStats({
           totalFeaturedUsers: usersRes.data.total,
           totalFeaturedJobs: jobsRes.data.total,
+          totalUsers: allUsersRes.data.total,
         })
       } catch (error) {
         console.error('Failed to fetch stats:', error)
@@ -73,11 +76,45 @@ export default function AdminDashboardPage() {
 
       {/* Stats Cards */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
         variants={staggerContainer}
         initial="hidden"
         animate="show"
       >
+        <motion.div variants={fadeInUp}>
+          <Card className="border-border/50 bg-card/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-xl bg-linear-to-br from-primary/20 to-primary/10 group-hover:from-primary/30 group-hover:to-primary/20 transition-all">
+                  <UserCog className="w-7 h-7 text-primary" />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-primary">
+                    {loading ? '...' : stats.totalUsers}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{t('stats.total')}</div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">{t('stats.totalUsers')}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t('stats.totalUsersDescription')}</p>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full group-hover:bg-primary/10 transition-colors"
+              >
+                <Link
+                  href="/admin/users"
+                  className="flex items-center justify-center gap-2"
+                >
+                  {t('manageAllUsers')}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         <motion.div variants={fadeInUp}>
           <Card className="border-border/50 bg-card/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
             <CardContent className="p-6">

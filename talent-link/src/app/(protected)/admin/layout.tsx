@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     },
     {
       href: '/admin/users',
-      label: t('sidebar.userManagement'),
+      label: t('sidebar.users'),
       icon: UserCog,
     },
     {

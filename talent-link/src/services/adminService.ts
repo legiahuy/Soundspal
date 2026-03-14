@@ -6,15 +6,37 @@ import type {
   FeaturedJobsResponse,
   FeatureActionResponse,
   AdminPaginationParams,
+  AdminUser,
   AdminUsersResponse,
-  AdminUserDetailResponse,
-  AdminUserListParams,
-  AdminActionResponse,
+  AdminUserParams,
+  AdminUserActionResponse,
 } from '@/types/admin'
 import type { Media, MediaListResponse } from '@/types/media'
 
 // Check if we should use mock data
 const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_ADMIN_DATA === 'true'
+
+// Helper to upload image trying multiple field names for backend compatibility
+async function uploadImageWithFieldFallback(
+  endpoint: string,
+  file: File,
+  fieldNames: string[],
+): Promise<string> {
+  let lastErr: unknown
+  for (const field of fieldNames) {
+    try {
+      const form = new FormData()
+      form.append(field, file)
+      const res = await axiosClient.post(endpoint, form)
+      const data = res.data?.data ?? res.data
+      return data?.url ?? data?.file_url ?? data?.path ?? ''
+    } catch (e) {
+      lastErr = e
+      continue
+    }
+  }
+  throw lastErr
+}
 
 export const adminService = {
   // ===== FEATURED USERS =====
@@ -73,6 +95,44 @@ export const adminService = {
       params: { q: query },
     })
     return res.data.data || []
+  },
+
+  // ===== ADMIN MEDIA MANAGEMENT =====
+
+  uploadUserAvatar: async (userId: string, file: File): Promise<string> => {
+    return uploadImageWithFieldFallback(
+      `/admin/users/${userId}/avatar`,
+      file,
+      ['file', 'avatar', 'image'],
+    )
+  },
+
+  uploadUserCover: async (userId: string, file: File): Promise<string> => {
+    return uploadImageWithFieldFallback(
+      `/admin/users/${userId}/cover`,
+      file,
+      ['file', 'cover', 'image'],
+    )
+  },
+
+  uploadUserMedia: async (userId: string, file: File): Promise<Media> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await axiosClient.post(`/admin/users/${userId}/media`, form)
+    return res.data?.data ?? res.data
+  },
+
+  deleteUserMedia: async (userId: string, mediaId: string): Promise<void> => {
+    await axiosClient.delete(`/admin/users/${userId}/media/${mediaId}`)
+  },
+
+  getUserMedia: async (userId: string): Promise<MediaListResponse> => {
+    const res = await axiosClient.get(`/admin/users/${userId}/media`)
+    const data = res.data?.data ?? res.data
+    return {
+      media: data?.media ?? [],
+      total: data?.total ?? data?.media?.length ?? 0,
+    }
   },
 
   // ===== UTILITY =====

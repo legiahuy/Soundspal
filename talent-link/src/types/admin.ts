@@ -82,8 +82,7 @@ export interface FeaturedJobsResponse {
   }
 }
 
-// ===== ADMIN USER MANAGEMENT =====
-
+// Admin User Management Types
 export interface AdminUser {
   id: string
   username: string
@@ -104,6 +103,9 @@ export interface AdminUser {
   instagram_url?: string
   youtube_url?: string
   website_url?: string
+  featured_release_links?: string[]
+  business_types?: string[]
+  capacity?: string
   created_at: string
   updated_at?: string
 }
@@ -117,19 +119,16 @@ export interface AdminUsersResponse {
   }
 }
 
-export interface AdminUserDetailResponse {
-  data: AdminUser
-}
-
-export interface AdminUserListParams {
+export interface AdminUserParams {
   limit?: number
   offset?: number
   role?: string
   search?: string
+  status?: string
 }
 
-export interface AdminUserUpdateRolePayload {
-  role: string
+export interface AdminUserActionResponse {
+  message: string
 }
 
 // Action Response Types
