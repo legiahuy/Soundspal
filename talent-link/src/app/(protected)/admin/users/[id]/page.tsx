@@ -50,7 +50,7 @@ export default function AdminUserDetailPage() {
     setLoading(true)
     try {
       const response = await adminService.getUser(userId)
-      setUser(response.data)
+      setUser(response)
     } catch (error) {
       console.error('Failed to fetch user:', error)
       toast.error(t('errorLoad'))
