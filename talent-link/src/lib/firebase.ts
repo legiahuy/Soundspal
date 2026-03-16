@@ -2,18 +2,17 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
 import { getAnalytics, Analytics, isSupported } from 'firebase/analytics'
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyBsm9xl3T0N5T6dGZw3aYQP_RTIhZEFH1M',
-  authDomain: 'talentlink-22clc.firebaseapp.com',
-  projectId: 'talentlink-22clc',
-  storageBucket: 'talentlink-22clc.firebasestorage.app',
-  messagingSenderId: '195779068090',
-  appId: '1:195779068090:web:8c5c0ca72238674daf4283',
-  measurementId: 'G-JWR07Z2QZ5',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-// Initialize Firebase (only if not already initialized)
+// Initialize Firebase (only once)
 let app: FirebaseApp
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig)
@@ -21,18 +20,12 @@ if (getApps().length === 0) {
   app = getApps()[0]
 }
 
-// Initialize Analytics (client-side only)
+// Initialize Analytics (client-side only, gracefully degrades if unsupported)
 export const getFirebaseAnalytics = async (): Promise<Analytics | null> => {
-  // Only initialize on client-side
-  if (typeof window === 'undefined') {
-    return null
-  }
-
+  if (typeof window === 'undefined') return null
   try {
     const supported = await isSupported()
-    if (supported) {
-      return getAnalytics(app)
-    }
+    if (supported) return getAnalytics(app)
     return null
   } catch (error) {
     console.error('Firebase Analytics initialization error:', error)

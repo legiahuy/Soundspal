@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { landingService } from '@/services/landingService'
 import LandingPageClient, { ArtistData } from './LandingPageClient'
+import AppDownloadSection from '@/components/sections/AppDownloadSection'
 import { JobPost } from '@/types/job'
 import { FeaturedUser, FeaturedJob } from '@/types/admin'
 import { Metadata } from 'next'
@@ -71,5 +72,10 @@ export default async function LandingPage() {
     // Fallback to empty arrays
   }
 
-  return <LandingPageClient artists={featuredArtists} jobs={featuredJobs} />
+  return (
+    <>
+      <LandingPageClient artists={featuredArtists} jobs={featuredJobs} />
+      <AppDownloadSection />
+    </>
+  )
 }
