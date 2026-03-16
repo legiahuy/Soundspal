@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://link.talent.vn'
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
 interface JobStub {
