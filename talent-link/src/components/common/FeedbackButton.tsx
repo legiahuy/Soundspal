@@ -22,7 +22,7 @@ export const FeedbackButton = () => {
         size="lg"
       >
         <Link
-          href="https://docs.google.com/forms/d/e/1FAIpQLSe66NkLKGnXth2ZytcHePkFRtj0o7E_0B8RBmPdyTp6q3svMQ/viewform"
+          href="https://docs.google.com/forms/d/e/1FAIpQLScsjq8G5ish9640ma213FJ-vaQQDoOh5p7PjmMPys5pdiEnFw/viewform"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2"

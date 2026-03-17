@@ -64,7 +64,7 @@ const Footer = () => {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href="https://docs.google.com/forms/d/e/1FAIpQLSe66NkLKGnXth2ZytcHePkFRtj0o7E_0B8RBmPdyTp6q3svMQ/viewform"
+                  href="https://docs.google.com/forms/d/e/1FAIpQLScsjq8G5ish9640ma213FJ-vaQQDoOh5p7PjmMPys5pdiEnFw/viewform"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors"

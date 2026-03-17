@@ -143,6 +143,26 @@ export const adminService = {
 
   // ===== USER MANAGEMENT =====
 
+  updateUserProfile: async (userId: string, data: Partial<AdminUser>): Promise<AdminUser> => {
+    const res = await axiosClient.put(`/admin/users/${userId}/profile`, data)
+    return res.data.data ?? res.data
+  },
+
+  updateUserEmail: async (userId: string, email: string): Promise<AdminUser> => {
+    const res = await axiosClient.put(`/admin/users/${userId}/email`, { email })
+    return res.data.data ?? res.data
+  },
+
+  updateUserGenres: async (userId: string, genre_names: string[]): Promise<any> => {
+    const res = await axiosClient.put(`/admin/users/${userId}/genres`, { genre_names })
+    return res.data.data ?? res.data
+  },
+
+  createUserExperience: async (userId: string, data: any): Promise<any> => {
+    const res = await axiosClient.post(`/admin/users/${userId}/experiences`, data)
+    return res.data.data ?? res.data
+  },
+
   listUsers: async (params?: AdminUserParams): Promise<AdminUsersResponse> => {
     const { limit = 20, offset = 0, role, search } = params || {}
     const res = await axiosClient.get('/admin/users', {

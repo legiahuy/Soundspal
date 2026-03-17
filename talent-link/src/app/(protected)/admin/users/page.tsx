@@ -69,7 +69,7 @@ export default function AdminUsersPage() {
         status: statusFilter || undefined,
       })
       const usersData = response.data.users
-      setUsers(Array.isArray(usersData) ? usersData : (usersData?.users || []))
+      setUsers(Array.isArray(usersData) ? usersData : usersData?.users || [])
       setPagination((prev) => ({
         ...prev,
         total: response.data.total,
@@ -90,7 +90,11 @@ export default function AdminUsersPage() {
     setPagination((prev) => ({ ...prev, offset: 0 }))
   }, [debouncedSearch, roleFilter, statusFilter])
 
-  const handleAction = (userId: string, userName: string, action: 'ban' | 'unban' | 'verify' | 'unverify') => {
+  const handleAction = (
+    userId: string,
+    userName: string,
+    action: 'ban' | 'unban' | 'verify' | 'unverify',
+  ) => {
     setConfirmDialog({ open: true, userId, userName, action })
   }
 
@@ -170,14 +174,17 @@ export default function AdminUsersPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (status?: string | null) => {
+    const s = status?.trim().toLowerCase() || 'active'
+    switch (s) {
       case 'active':
         return 'text-green-600 bg-green-500/10 border-green-500/20'
       case 'banned':
         return 'text-red-600 bg-red-500/10 border-red-500/20'
-      default:
+      case 'inactive':
         return 'text-yellow-600 bg-yellow-500/10 border-yellow-500/20'
+      default:
+        return 'text-muted-foreground bg-muted border-border'
     }
   }
 
@@ -247,7 +254,13 @@ export default function AdminUsersPage() {
           <option value="">{t('filterByRole')}</option>
           {ROLES.map((role) => (
             <option key={role} value={role}>
-              {t(`role${role.charAt(0).toUpperCase() + role.slice(1)}` as 'roleSinger' | 'roleProducer' | 'roleVenue' | 'roleAdmin')}
+              {t(
+                `role${role.charAt(0).toUpperCase() + role.slice(1)}` as
+                  | 'roleSinger'
+                  | 'roleProducer'
+                  | 'roleVenue'
+                  | 'roleAdmin',
+              )}
             </option>
           ))}
         </select>
@@ -259,7 +272,12 @@ export default function AdminUsersPage() {
           <option value="">{t('filterByStatus')}</option>
           {STATUSES.map((status) => (
             <option key={status} value={status}>
-              {t(`status${status.charAt(0).toUpperCase() + status.slice(1)}` as 'statusActive' | 'statusBanned' | 'statusInactive')}
+              {t(
+                `status${status.charAt(0).toUpperCase() + status.slice(1)}` as
+                  | 'statusActive'
+                  | 'statusBanned'
+                  | 'statusInactive',
+              )}
             </option>
           ))}
         </select>
@@ -321,7 +339,7 @@ export default function AdminUsersPage() {
               <Card
                 className={cn(
                   'group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 min-h-[280px] h-full',
-                  user.status === 'banned' && 'opacity-75',
+                  user.status?.toLowerCase() === 'banned' && 'opacity-75',
                 )}
               >
                 <CardContent className="p-4 flex flex-col h-full gap-3">
@@ -357,18 +375,24 @@ export default function AdminUsersPage() {
                     </Badge>
                     <Badge
                       variant="outline"
-                      className={cn('text-xs', getStatusColor(user.status))}
+                      className={cn('capitalize', getStatusColor(user.status))}
                     >
-                      {user.status}
+                      {user.status?.toLowerCase() || 'active'}
                     </Badge>
                     {user.is_verified && (
-                      <Badge variant="outline" className="text-xs text-blue-600 bg-blue-500/10 border-blue-500/20">
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-blue-600 bg-blue-500/10 border-blue-500/20"
+                      >
                         <CheckCircle className="w-3 h-3 mr-1" />
                         {t('verified')}
                       </Badge>
                     )}
                     {user.is_featured && (
-                      <Badge variant="outline" className="text-xs text-amber-600 bg-amber-500/10 border-amber-500/20">
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-amber-600 bg-amber-500/10 border-amber-500/20"
+                      >
                         {t('featured')}
                       </Badge>
                     )}
@@ -416,16 +440,21 @@ export default function AdminUsersPage() {
                       size="sm"
                       className="flex-1 group-hover:bg-primary/10 transition-colors"
                     >
-                      <Link href={`/admin/users/${user.id}`} className="flex items-center justify-center gap-1.5">
+                      <Link
+                        href={`/admin/users/${user.username}`}
+                        className="flex items-center justify-center gap-1.5"
+                      >
                         <Eye className="w-3.5 h-3.5" />
                         {t('viewDetails')}
                       </Link>
                     </Button>
-                    {user.status === 'banned' ? (
+                    {user.status?.toLowerCase() === 'banned' ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAction(user.id, user.display_name || user.username, 'unban')}
+                        onClick={() =>
+                          handleAction(user.id, user.display_name || user.username, 'unban')
+                        }
                         disabled={actionLoading === user.id}
                         className="hover:bg-green-500/10 hover:text-green-600 hover:border-green-500/30 transition-colors"
                       >
@@ -435,7 +464,9 @@ export default function AdminUsersPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAction(user.id, user.display_name || user.username, 'ban')}
+                        onClick={() =>
+                          handleAction(user.id, user.display_name || user.username, 'ban')
+                        }
                         disabled={actionLoading === user.id || user.role === 'admin'}
                         className="hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/30 transition-colors"
                       >
@@ -446,7 +477,9 @@ export default function AdminUsersPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAction(user.id, user.display_name || user.username, 'unverify')}
+                        onClick={() =>
+                          handleAction(user.id, user.display_name || user.username, 'unverify')
+                        }
                         disabled={actionLoading === user.id}
                         className="hover:bg-yellow-500/10 hover:text-yellow-600 hover:border-yellow-500/30 transition-colors"
                       >
@@ -456,7 +489,9 @@ export default function AdminUsersPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAction(user.id, user.display_name || user.username, 'verify')}
+                        onClick={() =>
+                          handleAction(user.id, user.display_name || user.username, 'verify')
+                        }
                         disabled={actionLoading === user.id}
                         className="hover:bg-blue-500/10 hover:text-blue-600 hover:border-blue-500/30 transition-colors"
                       >

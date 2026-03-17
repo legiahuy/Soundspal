@@ -103,6 +103,7 @@ export interface AdminUser {
   instagram_url?: string
   youtube_url?: string
   website_url?: string
+  phone_number?: string
   featured_release_links?: string[]
   business_types?: string[]
   capacity?: string
@@ -158,4 +159,29 @@ export interface AdminMediaUploadResponse {
   url?: string
   file_url?: string
   path?: string
+}
+
+export interface AdminUpdateUserProfileRequest {
+  display_name?: string;
+  brief_bio?: string;
+  detail_bio?: string;
+  city?: string;
+  country?: string;
+}
+
+export interface AdminUpdateUserEmailRequest {
+  email: string;
+}
+
+export interface UpdateGenresRequest {
+  genre_names: string[];
+}
+
+export interface CreateExperienceRequest {
+  title?: string;
+  description?: string;
+  portfolio_url?: string;
+  start_date?: string;
+  end_date?: string;
+  genre_names?: string[];
 }
