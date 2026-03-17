@@ -586,6 +586,10 @@
       "errorLoad": "Không thể tải danh sách người dùng"
     },
     "userDetailPage": {
+      "tabs": {
+        "overview": "Tổng quan",
+        "edit": "Chỉnh sửa hồ sơ"
+      },
       "errorLoad": "Không thể tải thông tin người dùng",
       "userNotFound": "Không tìm thấy người dùng",
       "backToUsers": "Quay lại danh sách",

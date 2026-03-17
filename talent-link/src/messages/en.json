@@ -586,6 +586,10 @@
       "errorLoad": "Failed to load users"
     },
     "userDetailPage": {
+      "tabs": {
+        "overview": "Overview",
+        "edit": "Edit Profile"
+      },
       "errorLoad": "Failed to load user details",
       "userNotFound": "User not found",
       "backToUsers": "Back to Users",

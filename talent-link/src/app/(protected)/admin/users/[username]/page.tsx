@@ -27,13 +27,15 @@ import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import AdminProfileEditor from '@/components/profile/edit/AdminProfileEditor'
 
 export default function AdminUserDetailPage() {
   const t = useTranslations('Admin.userDetailPage')
   const tUsers = useTranslations('Admin.usersPage')
   const params = useParams()
   const router = useRouter()
-  const userId = params.id as string
+  const username = params.username as string
 
   const [user, setUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
@@ -49,7 +51,7 @@ export default function AdminUserDetailPage() {
   const fetchUser = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await adminService.getUser(userId)
+      const response = await adminService.getUser(username)
       setUser(response)
     } catch (error) {
       console.error('Failed to fetch user:', error)
@@ -57,7 +59,7 @@ export default function AdminUserDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [userId, t])
+  }, [username, t])
 
   useEffect(() => {
     fetchUser()
@@ -130,14 +132,17 @@ export default function AdminUserDetailPage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (status?: string | null) => {
+    const s = status?.trim().toLowerCase() || 'active'
+    switch (s) {
       case 'active':
         return 'text-green-600 bg-green-500/10 border-green-500/20'
       case 'banned':
         return 'text-red-600 bg-red-500/10 border-red-500/20'
-      default:
+      case 'inactive':
         return 'text-yellow-600 bg-yellow-500/10 border-yellow-500/20'
+      default:
+        return 'text-muted-foreground bg-muted border-border'
     }
   }
 
@@ -225,7 +230,14 @@ export default function AdminUserDetailPage() {
         </h1>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">{t('tabs.overview', { defaultValue: 'Overview' })}</TabsTrigger>
+          <TabsTrigger value="edit">{t('tabs.edit', { defaultValue: 'Edit Profile' })}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Profile Card */}
         <motion.div
           className="lg:col-span-1"
@@ -266,7 +278,7 @@ export default function AdminUserDetailPage() {
                   variant="outline"
                   className={cn('capitalize', getStatusColor(user.status))}
                 >
-                  {user.status}
+                  {user.status?.toLowerCase() || 'active'}
                 </Badge>
                 {user.is_verified && (
                   <Badge variant="outline" className="text-blue-600 bg-blue-500/10 border-blue-500/20">
@@ -306,7 +318,7 @@ export default function AdminUserDetailPage() {
               {/* Action Buttons */}
               <div className="w-full space-y-2 pt-4 border-t border-border/50">
                 <h3 className="text-sm font-semibold mb-3">{t('actions')}</h3>
-                {user.status === 'banned' ? (
+                {user.status?.toLowerCase() === 'banned' ? (
                   <Button
                     variant="outline"
                     size="sm"
@@ -388,7 +400,7 @@ export default function AdminUserDetailPage() {
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t('status')}</p>
                   <Badge variant="outline" className={cn('capitalize', getStatusColor(user.status))}>
-                    {user.status}
+                    {user.status?.toLowerCase() || 'active'}
                   </Badge>
                 </div>
                 <div>
@@ -492,6 +504,12 @@ export default function AdminUserDetailPage() {
           </Card>
         </motion.div>
       </div>
+      </TabsContent>
+
+      <TabsContent value="edit">
+        <AdminProfileEditor targetUser={user} onUpdate={fetchUser} />
+      </TabsContent>
+      </Tabs>
 
       {/* Confirm Dialog */}
       <ConfirmDialog

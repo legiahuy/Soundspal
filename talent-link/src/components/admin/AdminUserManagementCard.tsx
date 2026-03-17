@@ -37,7 +37,7 @@ export function AdminUserManagementCard({ user }: AdminUserManagementCardProps) 
             {user.is_verified && (
               <CheckCircle2 className="w-4 h-4 text-blue-500" />
             )}
-            {user.status === 'banned' && (
+            {user.status?.toLowerCase() === 'banned' && (
               <Badge variant="destructive" className="text-xs px-1.5 py-0">
                 Banned
               </Badge>
@@ -46,7 +46,7 @@ export function AdminUserManagementCard({ user }: AdminUserManagementCardProps) 
 
           {/* User Avatar & Info */}
           <div className="flex flex-col items-center text-center gap-2 mb-2">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex-shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
+            <div className="relative w-16 h-16 rounded-full overflow-hidden bg-linear-to-br from-primary/20 to-primary/10 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
@@ -82,7 +82,7 @@ export function AdminUserManagementCard({ user }: AdminUserManagementCardProps) 
           {/* Email */}
           {user.email && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Mail className="w-3 h-3 flex-shrink-0" />
+              <Mail className="w-3 h-3 shrink-0" />
               <span className="truncate">{user.email}</span>
             </div>
           )}
@@ -90,7 +90,7 @@ export function AdminUserManagementCard({ user }: AdminUserManagementCardProps) 
           {/* Location */}
           {(user.city || user.country) && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">
                 {[user.city, user.country].filter(Boolean).join(', ')}
               </span>
@@ -114,7 +114,7 @@ export function AdminUserManagementCard({ user }: AdminUserManagementCardProps) 
           )}
 
           {/* Spacer */}
-          <div className="flex-grow" />
+          <div className="grow" />
 
           {/* Created Date */}
           {user.created_at && (
