@@ -21,6 +21,9 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'),
+  alternates: {
+    canonical: './',
+  },
   title: {
     template: '%s | Soundspal',
     default: 'Soundspal - Connect with Top Music Talent & Venues',
@@ -44,7 +47,7 @@ export const metadata: Metadata = {
     title: 'Soundspal - Connect with Top Music Talent & Venues',
     description:
       'The premier platform connecting independent music artists with venues and organizers.',
-    url: 'https://link.talent.vn',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com',
     siteName: 'Soundspal',
     locale: 'vi_VN',
     type: 'website',

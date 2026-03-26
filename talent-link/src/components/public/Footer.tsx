@@ -14,7 +14,7 @@ const Footer = () => {
           <div className="md:col-span-5 lg:col-span-4 space-y-6">
             <Link href="/" className="flex items-center">
               <Image
-                src="/Soundspal.svg"
+                src="/Soundspal.png"
                 alt="Soundspal Logo"
                 width={120}
                 height={32}
@@ -24,7 +24,7 @@ const Footer = () => {
             <p className="text-sm text-muted-foreground pr-4 lg:pr-8">{t('description')}</p>
             
             <div className="flex gap-4 pt-2">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="https://www.facebook.com/SoundspalHQ" target='_blank' className="text-muted-foreground hover:text-foreground transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">

@@ -6,13 +6,11 @@ import {
   MapPin,
   Banknote,
   Calendar,
-  Briefcase,
   Bookmark,
   BookmarkCheck,
   ExternalLink,
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { resolveMediaUrl } from '@/lib/utils'
@@ -93,16 +91,6 @@ const JobCard = ({
     return t('negotiable')
   }
 
-  const getJobType = () => {
-    if (job.type) {
-      return tOptions(`roles.${job.type}`)
-    }
-    return job.post_type === 'job_offer'
-      ? tOptions('postTypes.job_offer')
-      : job.post_type === 'gig'
-        ? tOptions('postTypes.gig')
-        : tOptions('postTypes.availability')
-  }
 
   const getLocation = () => {
     const locType = job.location_type ? tOptions(`locationTypes.${job.location_type}`) : null
@@ -128,7 +116,7 @@ const JobCard = ({
   }
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-transparent hover:border-l-primary h-full flex flex-col">
+    <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-transparent hover:border-l-primary h-full flex flex-col overflow-hidden">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-4">
           <button onClick={handleCreatorClick} className="shrink-0 cursor-pointer relative z-10">
@@ -185,13 +173,13 @@ const JobCard = ({
             <Briefcase className="w-4 h-4 shrink-0" />
             <span className="truncate">{getJobType()}</span>
           </div> */}
-          <div className="flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 shrink-0" />
-            <span className="truncate">{getLocation()}</span>
+          <div className="flex items-start gap-1.5 min-w-0">
+            <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="wrap-break-word">{getLocation()}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Banknote className="w-4 h-4 shrink-0" />
-            <span className="truncate">{formatSalary()}</span>
+          <div className="flex items-start gap-1.5 min-w-0">
+            <Banknote className="w-4 h-4 shrink-0 mt-0.5" />
+            <span className="wrap-break-word">{formatSalary()}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 shrink-0" />

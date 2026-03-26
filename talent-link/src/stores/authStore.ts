@@ -278,7 +278,7 @@ export const useAuthStore = create<AuthState>()(
             refreshToken: null,
             isAuthenticated: false,
           })
-          toast.error('Error fetching user data. Please try again!')
+          // toast.error('Error fetching user data. Please try again!')
           throw err
         } finally {
           // set({ loading: false })
