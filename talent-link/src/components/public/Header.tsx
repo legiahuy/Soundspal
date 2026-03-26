@@ -59,7 +59,7 @@ const Header = () => {
           {/* Logo */}
           <Link href="/" className="transition-opacity hover:opacity-80 shrink-0">
             <Image
-              src="/Soundspal.svg"
+              src="/Soundspal.png"
               alt="Soundspal Logo"
               width={120}
               height={32}
@@ -99,7 +99,7 @@ const Header = () => {
                      <DrawerTitle className="sr-only">Menu</DrawerTitle>
                      <Link href="/" className="mb-6 block" onClick={() => setIsOpen(false)}>
                         <Image
-                          src="/Soundspal.svg"
+                          src="/Soundspal.png"
                           alt="Soundspal Logo"
                           width={120}
                           height={32}

@@ -48,9 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-8 flex flex-col items-center text-center gap-4">
             <Frown className="z-10 size-10" />
             <h1 className="text-2xl font-bold z-10">{t('accessDenied.title')}</h1>
-            <p className="text-muted-foreground z-10">
-              {t('accessDenied.description')}
-            </p>
+            <p className="text-muted-foreground z-10">{t('accessDenied.description')}</p>
             <Button
               onClick={() => router.replace('/')}
               variant="link"
@@ -120,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div className="mb-8 px-4">
                 <Link href="/">
                   <Image
-                    src="/Soundspal.svg"
+                    src="/Soundspal.png"
                     alt="Soundspal Logo"
                     width={120}
                     height={32}

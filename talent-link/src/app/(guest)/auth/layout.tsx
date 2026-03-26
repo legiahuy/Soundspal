@@ -27,7 +27,7 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
             <div className="absolute top-6 left-6 z-20">
               <Link href="/">
                 <Image
-                  src="/Soundspal.svg"
+                  src="/Soundspal.png"
                   alt={t('logoAlt')}
                   width={120}
                   height={32}
@@ -51,7 +51,7 @@ const AuthLayout = ({ children }: { children?: React.ReactNode }) => {
               <div className="flex justify-center gap-2">
                 <Link href="/">
                   <Image
-                    src="/Soundspal.svg"
+                    src="/Soundspal.png"
                     alt={t('logoAlt')}
                     width={120}
                     height={32}

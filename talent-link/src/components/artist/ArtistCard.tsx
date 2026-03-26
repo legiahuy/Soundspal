@@ -16,16 +16,11 @@ interface ArtistCardProps {
 }
 
 const ArtistCard = ({ name, username, image, genres, location, description, roleLabel }: ArtistCardProps) => {
-  const handleClick = () => {
-    // Scroll to top before navigation for better back button UX
-    window.scrollTo(0, 0)
-  }
-
   const displayGenres = genres.slice(0, 2)
   const remainingCount = genres.length - 2
 
   return (
-    <Link href={`/profile/${username}`} className="group block h-full" onClick={handleClick}>
+    <Link href={`/profile/${username}`} className="group block h-full">
       <motion.div
         className="relative overflow-hidden rounded-xl bg-card border border-border/40  mx-3 h-full flex flex-col"
         whileHover={{
