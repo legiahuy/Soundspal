@@ -14,25 +14,64 @@ interface UserStub {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Static routes
-  const routes = [
-    '',
-    '/about',
-    '/contact',
-    '/jobs',
-    '/discovery',
-    '/login',
-    '/signup',
-    '/careers',
-    '/help',
-    '/terms',
-    '/privacy',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : 0.8,
-  }))
+  // Static public routes (indexable pages only — no auth/private routes)
+  const staticRoutes: MetadataRoute.Sitemap = [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/discovery`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/jobs`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/careers`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/help`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    // NOTE: /login and /signup intentionally excluded — they are noindex auth pages
+  ]
 
   // Dynamic routes: Jobs
   let jobRoutes: MetadataRoute.Sitemap = []
@@ -48,7 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${baseUrl}/jobs/${job.id}`,
         lastModified: new Date(job.updated_at || job.created_at),
         changeFrequency: 'weekly' as const,
-        priority: 0.6,
+        priority: 0.7,
       }))
     }
   } catch (error) {
@@ -58,8 +97,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic routes: Profiles
   let profileRoutes: MetadataRoute.Sitemap = []
   try {
-    // Note: Search endpoint is often POST, check if GET /users works or use POST
-    // Assuming search is POST based on service
     const res = await fetch(`${apiUrl}/search/users`, {
       method: 'POST',
       headers: {
@@ -84,5 +121,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error generating profile sitemap:', error)
   }
 
-  return [...routes, ...jobRoutes, ...profileRoutes]
+  return [...staticRoutes, ...jobRoutes, ...profileRoutes]
 }

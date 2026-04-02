@@ -3,10 +3,18 @@ import JobPoolClient from './JobPoolClient'
 import { JobSearchRequest, JobPost, JobPostSearchDto } from '@/types/job'
 import { Metadata } from 'next'
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'
+
 export const metadata: Metadata = {
-  title: 'Find Jobs',
+  title: 'Find Music Jobs & Gigs',
   description:
     'Browse the latest creative jobs, auditions, and gigs. Find your next opportunity in the entertainment industry on Soundspal.',
+  alternates: {
+    canonical: `${APP_URL}/jobs`,
+  },
+  openGraph: {
+    url: `${APP_URL}/jobs`,
+  },
 }
 
 export default async function JobPoolPage() {

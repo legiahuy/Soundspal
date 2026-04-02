@@ -4,10 +4,18 @@ import { searchService } from '@/services/searchService'
 import { resolveMediaUrl } from '@/lib/utils'
 import { Metadata } from 'next'
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'
+
 export const metadata: Metadata = {
-  title: 'Discover Talent',
+  title: 'Discover Music Talent',
   description:
     'Connect with top creative talent and venues. Explore profiles of producers, singers, and venues on Soundspal.',
+  alternates: {
+    canonical: `${APP_URL}/discovery`,
+  },
+  openGraph: {
+    url: `${APP_URL}/discovery`,
+  },
 }
 
 interface DiscoveryItem {

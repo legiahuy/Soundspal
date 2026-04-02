@@ -73,6 +73,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/help" className="hover:text-foreground transition-colors">
+                  {t('help')}
+                </Link>
+              </li>
+              <li>
                 <Link href="/terms" className="hover:text-foreground transition-colors">
                   {t('terms')}
                 </Link>

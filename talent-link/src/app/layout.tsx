@@ -19,10 +19,12 @@ const mono = IBM_Plex_Mono({
   weight: ['100', '200', '300', '400', '500', '600', '700'],
 })
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'),
+  metadataBase: new URL(APP_URL),
   alternates: {
-    canonical: './',
+    canonical: APP_URL,
   },
   title: {
     template: '%s | Soundspal',

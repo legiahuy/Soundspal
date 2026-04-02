@@ -40,6 +40,7 @@ const Header = () => {
     { href: '/discovery', label: t('navigation.discovery') },
     { href: '/jobs', label: t('navigation.jobs') },
     { href: '/about', label: t('navigation.about') },
+    { href: '/help', label: t('navigation.help') },
   ]
 
   const router = useRouter()

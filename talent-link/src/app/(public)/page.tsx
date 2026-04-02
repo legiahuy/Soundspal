@@ -6,10 +6,18 @@ import { JobPost } from '@/types/job'
 import { FeaturedUser, FeaturedJob } from '@/types/admin'
 import { Metadata } from 'next'
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'
+
 export const metadata: Metadata = {
   title: 'Soundspal - Connect with Top Talent & Opportunities',
   description:
     'Find the best artists, venues, and creative jobs. Join Soundspal today to showcase your portfolio or hire top talent.',
+  alternates: {
+    canonical: APP_URL,
+  },
+  openGraph: {
+    url: APP_URL,
+  },
 }
 
 export default async function LandingPage() {
