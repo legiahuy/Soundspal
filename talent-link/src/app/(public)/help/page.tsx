@@ -1,26 +1,25 @@
 import { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.soundspal.com'
 
-export const metadata: Metadata = {
-  title: 'Help Center',
-  description:
-    'Find answers to frequently asked questions about Soundspal. Learn how to create a profile, post jobs, find gigs, and connect with talent.',
-  alternates: {
-    canonical: `${APP_URL}/help`,
-  },
-  openGraph: {
-    title: 'Soundspal Help Center',
-    description: 'Find answers to frequently asked questions about Soundspal.',
-    url: `${APP_URL}/help`,
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('HelpPage')
+  return {
+    title: t('title'),
+    description: t('subtitle'),
+    alternates: { canonical: `${APP_URL}/help` },
+    openGraph: { title: t('title'), url: `${APP_URL}/help` },
+  }
 }
 
+// FAQ content — structured data kept in code for SEO-rich server rendering.
+// Questions/answers are in English (translation keys cover structural UI only).
 const faqs = [
   {
-    category: 'Getting Started',
+    categoryKey: 'gettingStarted' as const,
     items: [
       {
         q: 'What is Soundspal?',
@@ -37,7 +36,7 @@ const faqs = [
     ],
   },
   {
-    category: 'For Artists',
+    categoryKey: 'forArtists' as const,
     items: [
       {
         q: 'How do I find gigs and job opportunities?',
@@ -54,7 +53,7 @@ const faqs = [
     ],
   },
   {
-    category: 'For Venues & Organizers',
+    categoryKey: 'forVenues' as const,
     items: [
       {
         q: 'How do I post a job or gig listing?',
@@ -71,7 +70,7 @@ const faqs = [
     ],
   },
   {
-    category: 'Account & Privacy',
+    categoryKey: 'accountPrivacy' as const,
     items: [
       {
         q: 'How do I reset my password?',
@@ -85,35 +84,43 @@ const faqs = [
   },
 ]
 
-export default function HelpPage() {
+export default async function HelpPage() {
+  const t = await getTranslations('HelpPage')
+
+  const categoryLabels: Record<string, string> = {
+    gettingStarted: t('gettingStarted'),
+    forArtists: t('forArtists'),
+    forVenues: t('forVenues'),
+    accountPrivacy: t('accountPrivacy'),
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Background blobs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-[700px] h-[400px] bg-primary/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-0 left-1/4 w-[600px] h-[400px] bg-primary/10 blur-[130px] rounded-full" />
       </div>
 
       <div className="relative z-10 container mx-auto max-w-[860px] px-4 py-24">
-        {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-            Help Center
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 pb-2 bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+            {t('title')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Find answers to common questions. Can&apos;t find what you&apos;re looking for?{' '}
+            {t('subtitle')}{' '}
             <Link href="/contact" className="text-primary hover:underline">
-              Contact us
+              {t('contactUs')}
             </Link>
             .
           </p>
         </div>
 
-        {/* FAQ sections */}
         <div className="space-y-12">
           {faqs.map((section) => (
-            <div key={section.category}>
-              <h2 className="text-2xl font-bold mb-6 text-foreground">{section.category}</h2>
+            <div key={section.categoryKey}>
+              <h2 className="text-2xl font-bold mb-6 text-foreground">
+                {categoryLabels[section.categoryKey]}
+              </h2>
               <div className="space-y-3">
                 {section.items.map((item) => (
                   <details
@@ -132,17 +139,14 @@ export default function HelpPage() {
           ))}
         </div>
 
-        {/* Bottom CTA */}
         <div className="mt-16 text-center p-10 rounded-3xl bg-primary/5 border border-primary/20">
-          <h2 className="text-2xl font-bold mb-3">Still need help?</h2>
-          <p className="text-muted-foreground mb-6">
-            Our support team is happy to assist you with any questions or issues.
-          </p>
+          <h2 className="text-2xl font-bold mb-3">{t('ctaTitle')}</h2>
+          <p className="text-muted-foreground mb-6">{t('ctaSubtitle')}</p>
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
           >
-            Contact Support
+            {t('ctaButton')}
           </Link>
         </div>
       </div>
