@@ -6,7 +6,18 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
-import { Calendar, ChevronLeft, ChevronRight, FileText, Pencil, Plus, UploadCloud } from 'lucide-react'
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  FileText,
+  Flame,
+  Home,
+  Pencil,
+  Plus,
+  UploadCloud,
+} from 'lucide-react'
 
 import { blogService } from '@/services/blogService'
 import type { BlogPost } from '@/types/blog'
@@ -102,7 +113,28 @@ export default function AdminBlogsPage() {
   )
 
   return (
-    <div>
+    <div className="grid grid-cols-1 xl:grid-cols-[220px_minmax(0,1fr)_280px] gap-6">
+      <aside className="hidden xl:block">
+        <div className="sticky top-8 space-y-2">
+          {[
+            { label: 'Home', icon: Home },
+            { label: 'Trending', icon: Flame },
+            { label: 'Topics', icon: Compass },
+          ].map((item, idx) => (
+            <div
+              key={item.label}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
+                idx === 0 ? 'bg-[#F8F9FA] text-[#7D3BED] font-medium' : 'text-[#64748B]'
+              }`}
+            >
+              <item.icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <div>
       <motion.div
         className="mb-8"
         initial={{ opacity: 0, y: -20 }}
@@ -313,6 +345,30 @@ export default function AdminBlogsPage() {
           </Button>
         </motion.div>
       )}
+      </div>
+
+      <aside className="hidden xl:block">
+        <div className="sticky top-8 space-y-4">
+          <Card className="bg-[#F8F9FA] border-[#E7E7E7]">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold text-[#1E1E1E] mb-2">Quick stats</h3>
+              <p className="text-sm text-[#64748B]">Total posts: {pagination.total}</p>
+              <p className="text-sm text-[#64748B]">Current page: {currentPage}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#F8F9FA] border-[#E7E7E7]">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-semibold text-[#1E1E1E] mb-2">Tips</h3>
+              <ul className="space-y-2 text-sm text-[#64748B]">
+                <li>Viet short_description ro rang.</li>
+                <li>Gan tag de de discover.</li>
+                <li>Publish khi da review version history.</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </aside>
     </div>
   )
 }
