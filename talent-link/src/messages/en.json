@@ -4,6 +4,7 @@
       "home": "Home",
       "discovery": "Discovery",
       "jobs": "Jobs",
+      "blogs": "Blogs",
       "about": "About",
       "help": "Help"
     },
@@ -17,6 +18,18 @@
       "settings": "Settings",
       "logout": "Logout"
     }
+  },
+  "BlogsPage": {
+    "title": "Blogs",
+    "subtitle": "Latest articles and updates",
+    "loading": "Loading blogs...",
+    "error": "Unable to load blogs right now.",
+    "empty": "No blog posts yet."
+  },
+  "BlogDetail": {
+    "back": "Back to blogs",
+    "loading": "Loading post...",
+    "error": "Unable to load this post."
   },
   "Settings": {
     "profile": {
@@ -644,6 +657,7 @@
     },
     "sidebar": {
       "overview": "Overview",
+      "blogs": "Blogs",
       "featuredUsers": "Featured Users",
       "featuredJobs": "Featured Jobs",
       "users": "User Management"

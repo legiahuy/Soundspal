@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'talentlink.io.vn',
+        pathname: '/api/v1/images/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'avatar.iran.liara.run',
       },
       {

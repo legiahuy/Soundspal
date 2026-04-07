@@ -7,6 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function resolveMediaUrl(url?: string | null): string {
   if (!url) return ''
+  // Keep local static assets untouched
+  if (url.startsWith('/')) return url
   try {
     const u = new URL(url)
     // Map internal MinIO host to public base URL
@@ -25,4 +27,15 @@ export function resolveMediaUrl(url?: string | null): string {
     const cleaned = url.startsWith('/') ? url : `/${url}`
     return `${base}${cleaned}`
   }
+}
+
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
 }

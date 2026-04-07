@@ -4,6 +4,7 @@
       "home": "Trang chủ",
       "discovery": "Khám phá",
       "jobs": "Việc làm",
+      "blogs": "Blog",
       "about": "Giới thiệu",
       "help": "Trợ giúp"
     },
@@ -17,6 +18,18 @@
       "settings": "Cài đặt",
       "logout": "Đăng xuất"
     }
+  },
+  "BlogsPage": {
+    "title": "Blog",
+    "subtitle": "Bài viết mới nhất và cập nhật",
+    "loading": "Đang tải bài viết...",
+    "error": "Hiện không thể tải blog.",
+    "empty": "Chưa có bài viết nào."
+  },
+  "BlogDetail": {
+    "back": "Quay lại blog",
+    "loading": "Đang tải bài viết...",
+    "error": "Không thể tải bài viết này."
   },
   "Settings": {
     "profile": {
@@ -644,6 +657,7 @@
     },
     "sidebar": {
       "overview": "Tổng quan",
+      "blogs": "Blog",
       "featuredUsers": "Người dùng nổi bật",
       "featuredJobs": "Việc làm nổi bật",
       "users": "Quản lý người dùng"
