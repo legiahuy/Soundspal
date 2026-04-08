@@ -4,7 +4,19 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Loader2, Save, Upload, UploadCloud } from 'lucide-react'
+import {
+  ArrowLeft,
+  Bold,
+  Eye,
+  Heading1,
+  ImagePlus,
+  Italic,
+  Link2,
+  Loader2,
+  Quote,
+  Save,
+  Upload,
+} from 'lucide-react'
 import { toast } from 'sonner'
 
 import { blogService } from '@/services/blogService'
@@ -13,11 +25,9 @@ import { resolveMediaUrl } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { BlogVersion } from '@/types/blog'
 
 export default function AdminBlogEditPage() {
@@ -37,9 +47,10 @@ export default function AdminBlogEditPage() {
   const [shortDescription, setShortDescription] = useState('')
   const [topicId, setTopicId] = useState('')
   const [tagsInput, setTagsInput] = useState('')
-  const [content, setContent] = useState('')
+  const [contentHtml, setContentHtml] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let active = true
@@ -54,7 +65,7 @@ export default function AdminBlogEditPage() {
         setShortDescription(data.short_description || data.brief_description || '')
         setTopicId(data.topic_id || '')
         setTagsInput(Array.isArray(data.tags) ? data.tags.join(', ') : '')
-        setContent(data.content || '')
+        setContentHtml(data.content || '')
       } catch (e) {
         console.error(e)
         toast.error('Không thể tải bài viết')
@@ -69,10 +80,18 @@ export default function AdminBlogEditPage() {
   }, [id])
 
   const canSave = useMemo(() => {
+    const plain = contentHtml.replace(/<[^>]*>/g, '').trim()
     if (!title.trim()) return false
-    if (content.trim().length < 20) return false
+    if (plain.length < 20) return false
     return true
-  }, [title, content])
+  }, [title, contentHtml])
+
+  const exec = (command: string, value?: string) => {
+    if (!editorRef.current) return
+    editorRef.current.focus()
+    document.execCommand(command, false, value)
+    setContentHtml(editorRef.current.innerHTML)
+  }
 
   const handleSave = async () => {
     if (!post) return
@@ -93,7 +112,7 @@ export default function AdminBlogEditPage() {
         short_description: shortDescription.trim() || undefined,
         topic_id: topicId.trim() || undefined,
         tags: tags.length > 0 ? tags : undefined,
-        content: content.trim(),
+        content: contentHtml.trim(),
       }
 
       const updated = await blogService.updatePost(post.id, payload as UpdateBlogPostRequest)
@@ -193,295 +212,210 @@ export default function AdminBlogEditPage() {
   const status = (post.status || 'draft').toLowerCase()
   const isPublished = status === 'published'
   const cover = post.cover_image_url ? resolveMediaUrl(post.cover_image_url) : ''
+  const tagList = tagsInput
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
 
   return (
-    <div className="min-h-screen relative">
-      <div className="mx-auto w-full max-w-[1100px] px-4 md:px-6 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <Button variant="ghost" asChild className="-ml-2">
-            <Link href="/admin/blogs">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Quay lại
-            </Link>
-          </Button>
-
-          <div className="flex items-center gap-2">
-            <Badge variant={isPublished ? 'default' : 'secondary'} className="capitalize">
-              {status}
-            </Badge>
-            <Button asChild variant="outline" size="sm" className="gap-2">
-              <Link href={`/blogs/${post.slug}`} target="_blank">
-                <ExternalLink className="w-4 h-4" />
-                Xem public
+    <div className="min-h-screen bg-[#FFFFFF]">
+      <div className="sticky top-0 z-20 border-b border-[#E7E7E7] bg-white/95 backdrop-blur">
+        <div className="mx-auto max-w-[1320px] px-4 md:px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" asChild className="rounded-full">
+              <Link href="/admin/blogs">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
               </Link>
+            </Button>
+            <p className="text-sm text-[#64748B]">
+              {title || 'Untitled Draft'} - Last saved {post.updated_at ? 'recently' : 'just now'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="rounded-full border-[#E7E7E7]" asChild>
+              <Link href={`/blogs/${post.slug}`} target="_blank">
+                <Eye className="h-4 w-4 mr-1" />
+                Preview
+              </Link>
+            </Button>
+            <Button
+              className="rounded-full bg-[#7D3BED] hover:bg-[#6c30d6]"
+              onClick={handlePublish}
+              disabled={isPublished || publishing}
+            >
+              {publishing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              {isPublished ? 'Published' : 'Publish'}
             </Button>
           </div>
         </div>
+      </div>
 
-        <Card className="shadow-lg border-border/50 bg-card/70 backdrop-blur-sm">
-          <CardHeader className="border-b border-border/60">
-            <CardTitle className="text-2xl font-semibold">Chỉnh sửa bài viết</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Lưu thay đổi trước, sau đó publish khi sẵn sàng.
-            </p>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <Tabs defaultValue="editor">
-              <TabsList className="mb-6">
-                <TabsTrigger value="editor">Editor</TabsTrigger>
-                <TabsTrigger
-                  value="versions"
-                  onClick={() => {
-                    if (versions.length === 0 && post?.id) {
-                      loadVersions(post.id)
-                    }
-                  }}
+      <div className="mx-auto max-w-[1320px] px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
+        <main className="space-y-6">
+          <div className="relative w-full h-72 rounded-3xl overflow-hidden bg-[#F8F9FA]">
+            {cover ? (
+              <Image src={cover} alt="Cover" fill className="object-cover" />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-[#64748B]">No cover image</div>
+            )}
+          </div>
+
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title of your masterpiece"
+            className="h-16 border-0 bg-transparent text-5xl font-semibold shadow-none px-0 focus-visible:ring-0 placeholder:text-[#d3d3d3]"
+          />
+
+          <Input
+            value={shortDescription}
+            onChange={(e) => setShortDescription(e.target.value)}
+            placeholder="Short description..."
+            className="h-11 rounded-xl border-[#E7E7E7] bg-[#F8F9FA] text-sm"
+          />
+
+          <div className="rounded-2xl border border-[#E7E7E7] bg-white overflow-hidden">
+            <div className="border-b border-[#E7E7E7] bg-[#F8F9FA] px-3 py-2 flex items-center gap-1">
+              <button className="rounded-md p-2 hover:bg-white" onClick={() => exec('bold')}><Bold className="h-4 w-4" /></button>
+              <button className="rounded-md p-2 hover:bg-white" onClick={() => exec('italic')}><Italic className="h-4 w-4" /></button>
+              <button className="rounded-md p-2 hover:bg-white" onClick={() => exec('formatBlock', 'h1')}><Heading1 className="h-4 w-4" /></button>
+              <button className="rounded-md p-2 hover:bg-white" onClick={() => exec('formatBlock', 'blockquote')}><Quote className="h-4 w-4" /></button>
+              <button className="rounded-md p-2 hover:bg-white" onClick={() => exec('createLink', window.prompt('Enter URL') || '')}><Link2 className="h-4 w-4" /></button>
+              <button className="rounded-md p-2 hover:bg-white" onClick={() => fileInputRef.current?.click()}><ImagePlus className="h-4 w-4" /></button>
+            </div>
+
+            <div className="relative">
+              {!contentHtml.replace(/<[^>]*>/g, '').trim() && (
+                <p className="pointer-events-none absolute left-4 top-4 text-[#c8c8c8] text-base">
+                  Start typing your story...
+                </p>
+              )}
+              <div
+                ref={editorRef}
+                contentEditable
+                suppressContentEditableWarning
+                onInput={(e) => setContentHtml((e.currentTarget as HTMLDivElement).innerHTML)}
+                className="min-h-[420px] px-4 py-4 text-base leading-8 text-[#1E1E1E] focus:outline-none"
+                dangerouslySetInnerHTML={{ __html: contentHtml }}
+              />
+            </div>
+          </div>
+        </main>
+
+        <aside className="space-y-5">
+          <Card className="bg-[#F8F9FA] border-[#E7E7E7] rounded-2xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs tracking-wide uppercase text-[#64748B]">Status & Visibility</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
+                <span className="text-sm text-[#1E1E1E]">Current State</span>
+                <Badge className="bg-[#f2e9ff] text-[#7D3BED]">{status}</Badge>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="topicId" className="text-xs text-[#64748B]">Topic</Label>
+                <Input
+                  id="topicId"
+                  value={topicId}
+                  onChange={(e) => setTopicId(e.target.value)}
+                  className="bg-white border-[#E7E7E7]"
+                  placeholder="engineering"
+                />
+              </div>
+              <Button onClick={handleSave} disabled={!canSave || saving} className="w-full rounded-xl bg-[#e9e9e9] text-[#1E1E1E] hover:bg-[#dedede]">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                Save Draft
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#F8F9FA] border-[#E7E7E7] rounded-2xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs tracking-wide uppercase text-[#64748B]">Tags</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Input
+                id="tagsInput"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                className="bg-white border-[#E7E7E7]"
+                placeholder="creativity, design"
+              />
+              <div className="flex flex-wrap gap-2">
+                {tagList.map((tag) => (
+                  <span key={tag} className="rounded-full bg-[#efe7ff] text-[#7D3BED] px-3 py-1 text-xs">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#F8F9FA] border-[#E7E7E7] rounded-2xl">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs tracking-wide uppercase text-[#64748B]">Media Assets</CardTitle>
+              <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-[#7D3BED]" onClick={() => fileInputRef.current?.click()}>
+                Browse
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={(e) => handleSelectCover(e.target.files?.[0])}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative aspect-square rounded-xl overflow-hidden bg-white border border-[#E7E7E7]">
+                  {cover ? <Image src={cover} alt="cover" fill className="object-cover" /> : null}
+                </div>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-xl border border-dashed border-[#E7E7E7] bg-white text-[#b0b0b0] text-3xl flex items-center justify-center"
                 >
-                  Version history
-                </TabsTrigger>
-              </TabsList>
+                  {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : '+'}
+                </button>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full rounded-xl border-[#E7E7E7]"
+              >
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                Upload cover
+              </Button>
+            </CardContent>
+          </Card>
 
-              <TabsContent value="editor" className="mt-0">
-                <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">title *</Label>
-                      <Input
-                        id="title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Nhập tiêu đề..."
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="shortDescription">short_description</Label>
-                      <Input
-                        id="shortDescription"
-                        value={shortDescription}
-                        onChange={(e) => setShortDescription(e.target.value)}
-                        placeholder="Mô tả ngắn..."
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="topicId">topic_id</Label>
-                      <Input
-                        id="topicId"
-                        value={topicId}
-                        onChange={(e) => setTopicId(e.target.value)}
-                        placeholder="topic_id..."
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="tagsInput">tags (comma separated)</Label>
-                      <Input
-                        id="tagsInput"
-                        value={tagsInput}
-                        onChange={(e) => setTagsInput(e.target.value)}
-                        placeholder="tag-1, tag-2, tag-3"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="content">content *</Label>
-                      <Textarea
-                        id="content"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={14}
-                        minLength={20}
-                        placeholder="Nội dung bài viết..."
-                      />
-                      {content.trim().length > 0 && content.trim().length < 20 && (
-                        <p className="text-xs text-destructive">
-                          Nội dung phải tối thiểu 20 ký tự ({content.trim().length}/20)
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="space-y-3">
-                      <Label>Ảnh cover</Label>
-                      <div className="relative w-full h-44 rounded-xl overflow-hidden border border-border/50 bg-card/50">
-                        {cover ? (
-                          <Image src={cover} alt="Cover" fill className="object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
-                            Chưa có ảnh
-                          </div>
-                        )}
-                      </div>
-
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        className="hidden"
-                        onChange={(e) => handleSelectCover(e.target.files?.[0])}
-                      />
-
-                      <Button
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        className="w-full gap-2"
-                      >
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        {uploading ? 'Đang upload...' : 'Upload ảnh cover'}
-                      </Button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <Button
-                        onClick={handleSave}
-                        disabled={!canSave || saving}
-                        className="w-full gap-2"
-                      >
-                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-                      </Button>
-
-                      <Button
-                        onClick={handlePublish}
-                        disabled={isPublished || publishing}
-                        variant="outline"
-                        className="w-full gap-2 hover:bg-primary/10"
-                      >
-                        {publishing ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <UploadCloud className="w-4 h-4" />
-                        )}
-                        {isPublished ? 'Đã publish' : publishing ? 'Đang publish...' : 'Publish'}
-                      </Button>
-
-                      <Button variant="ghost" className="w-full" onClick={() => router.refresh()}>
-                        Làm mới
-                      </Button>
-                    </div>
-
-                    {/* Media */}
-                    <div className="space-y-3 rounded-lg border border-border/50 p-4 bg-card/40">
-                      <h4 className="font-semibold">Media</h4>
-                      {!post.media || post.media.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No media</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {post.media.map((m) => (
-                            <div key={m.id} className="rounded-md border border-border/50 p-3 text-sm">
-                              <div><span className="font-medium">id:</span> {m.id}</div>
-                              <div><span className="font-medium">media_type:</span> {m.media_type}</div>
-                              <div className="break-all"><span className="font-medium">url:</span> {m.url}</div>
-                              <div><span className="font-medium">post_id:</span> {m.post_id || '-'}</div>
-                              <div><span className="font-medium">embed_id:</span> {m.embed_id || '-'}</div>
-                              <div>
-                                <span className="font-medium">duration_seconds:</span> {m.duration_seconds ?? 0}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Post metadata */}
-                    <div className="space-y-3 rounded-lg border border-border/50 p-4 bg-card/40">
-                      <h4 className="font-semibold">Post metadata</h4>
-                      <div className="grid grid-cols-1 gap-2 text-sm">
-                        <div><span className="font-medium">id:</span> {post.id}</div>
-                        <div><span className="font-medium">author_id:</span> {post.author_id || '-'}</div>
-                        <div><span className="font-medium">title:</span> {post.title}</div>
-                        <div><span className="font-medium">slug:</span> {post.slug}</div>
-                        <div><span className="font-medium">topic_id:</span> {post.topic_id || '-'}</div>
-                        <div><span className="font-medium">status:</span> {post.status || '-'}</div>
-                        <div><span className="font-medium">created_at:</span> {post.created_at || '-'}</div>
-                        <div><span className="font-medium">updated_at:</span> {post.updated_at || '-'}</div>
-                        <div><span className="font-medium">published_at:</span> {post.published_at || '-'}</div>
-                        <div>
-                          <span className="font-medium">short_description:</span>{' '}
-                          {post.short_description || post.brief_description || '-'}
-                        </div>
-                        <div>
-                          <span className="font-medium">tags:</span>{' '}
-                          {post.tags && post.tags.length > 0 ? post.tags.join(', ') : '-'}
-                        </div>
-                      </div>
-                    </div>
+          <Card className="bg-[#F8F9FA] border-[#E7E7E7] rounded-2xl">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="text-xs tracking-wide uppercase text-[#64748B]">Version History</CardTitle>
+              <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-[#7D3BED]" onClick={() => loadVersions(post.id)} disabled={loadingVersions}>
+                Reload
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {loadingVersions && <p className="text-xs text-[#64748B]">Loading...</p>}
+              {!loadingVersions && versions.length === 0 && (
+                <p className="text-xs text-[#64748B]">No versions yet.</p>
+              )}
+              {versions.slice(0, 5).map((version, index) => (
+                <div key={`${version.version ?? index}-${version.created_at ?? index}`} className="flex items-start gap-2 text-xs text-[#64748B]">
+                  <span className={`mt-1.5 h-2 w-2 rounded-full ${index === 0 ? 'bg-[#7D3BED]' : 'bg-[#d1d1d1]'}`} />
+                  <div>
+                    <p className="text-[#1E1E1E] font-medium">
+                      {version.auto_save ? 'Auto-save' : `Version ${version.version ?? '-'}`}
+                    </p>
+                    <p>{version.created_at || 'unknown time'}</p>
                   </div>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="versions" className="mt-0">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-semibold">Lịch sử phiên bản</h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => post?.id && loadVersions(post.id)}
-                      disabled={loadingVersions}
-                    >
-                      {loadingVersions ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Đang tải...
-                        </>
-                      ) : (
-                        'Tải lại'
-                      )}
-                    </Button>
-                  </div>
-
-                  {loadingVersions ? (
-                    <div className="text-sm text-muted-foreground">Đang tải lịch sử phiên bản...</div>
-                  ) : versions.length === 0 ? (
-                    <div className="text-sm text-muted-foreground">
-                      Chưa có dữ liệu version cho bài viết này.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {versions.map((version, index) => (
-                        <div
-                          key={`${version.post_id || post.id}-${version.version ?? index}-${version.created_at ?? index}`}
-                          className="rounded-lg border border-border/50 p-4 bg-card/40"
-                        >
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
-                            <div>
-                              <span className="font-medium">version:</span> {version.version ?? '-'}
-                            </div>
-                            <div>
-                              <span className="font-medium">auto_save:</span>{' '}
-                              {version.auto_save === undefined ? '-' : String(version.auto_save)}
-                            </div>
-                            <div>
-                              <span className="font-medium">created_at:</span>{' '}
-                              {version.created_at || '-'}
-                            </div>
-                            <div>
-                              <span className="font-medium">post_id:</span> {version.post_id || post.id}
-                            </div>
-                          </div>
-
-                          <div className="text-sm mb-2">
-                            <span className="font-medium">title:</span> {version.title || '-'}
-                          </div>
-                          <div className="text-sm">
-                            <span className="font-medium">content:</span>
-                            <pre className="mt-1 whitespace-pre-wrap text-xs bg-muted/50 rounded p-3">
-                              {version.content || '-'}
-                            </pre>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </aside>
       </div>
     </div>
   )

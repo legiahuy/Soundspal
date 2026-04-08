@@ -14,6 +14,7 @@ import {
   Mic,
   Send,
   Share2,
+  UserPlus,
   ThumbsUp,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -99,7 +100,7 @@ export default function BlogDetailPage() {
   const shortDesc = post.short_description || post.brief_description
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] pb-28">
+    <div className="min-h-screen bg-[#FFFFFF] pb-12">
       <section className="border-b border-[#E7E7E7] pt-24 pb-8">
         <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6">
           <div className="flex items-center justify-between mb-6">
@@ -114,7 +115,7 @@ export default function BlogDetailPage() {
         </div>
       </section>
 
-      <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-[minmax(0,720px)_300px] gap-8">
+      <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-[minmax(0,760px)_320px] gap-8">
         <main>
           <div className="flex items-center gap-3 mb-4">
             <Badge className="bg-[#B39EF5] text-[#1E1E1E] hover:bg-[#B39EF5] rounded-full">
@@ -128,76 +129,140 @@ export default function BlogDetailPage() {
             )}
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight text-[#1E1E1E] mb-4">{post.title}</h1>
+          <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] text-[#1E1E1E] mb-6">{post.title}</h1>
 
           {shortDesc && <p className="text-[#64748B] text-lg leading-relaxed mb-6">{shortDesc}</p>}
 
+          {/* Actions row (should appear directly under short_description) */}
+          <div className="mb-6 flex items-center justify-between border-b border-[#E7E7E7] pb-3">
+            <div className="flex items-center gap-4 text-xs text-[#64748B]">
+              <span>{post.read_time ?? 12} min read</span>
+              <span className="flex items-center gap-1">
+                <ThumbsUp className="h-3.5 w-3.5" /> {post.upvote_count ?? 0}
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageCircle className="h-3.5 w-3.5" /> {post.comment_count ?? 0}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-[#64748B]">
+              <button className="rounded-full p-2 hover:bg-[#F8F9FA]" aria-label="Upvote">
+                <ThumbsUp className="h-4 w-4" />
+              </button>
+              <button className="rounded-full p-2 hover:bg-[#F8F9FA]" aria-label="Bookmark">
+                <Bookmark className="h-4 w-4" />
+              </button>
+              <button className="rounded-full p-2 hover:bg-[#F8F9FA]" aria-label="Share">
+                <Share2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#E7E7E7] px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-[#1E1E1E] text-white text-sm flex items-center justify-center">
+                {(post.author_id || 'A').charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[#1E1E1E]">{post.author_id || 'Elena Vance'}</p>
+                <p className="text-xs text-[#64748B]">Design Lead at Linear Systems</p>
+              </div>
+            </div>
+            <Button variant="outline" className="rounded-full h-8 px-3 text-xs border-[#E7E7E7]">
+              <UserPlus className="h-3.5 w-3.5 mr-1" />
+              Follow
+            </Button>
+          </div>
+
           {cover && (
-            <div className="relative w-full h-72 md:h-96 rounded-2xl overflow-hidden bg-[#F8F9FA] mb-8">
+            <div className="relative w-full h-72 md:h-[300px] rounded-2xl overflow-hidden bg-[#F8F9FA] mb-3">
               <Image src={cover} alt={post.title} fill className="object-cover" />
             </div>
           )}
 
           <article className="max-w-none">
             {post.content ? (
-              <div className="text-[#1E1E1E] leading-8 text-[16px] space-y-4 font-normal">
-                <blockquote className="border-l-4 border-[#7D3BED] bg-[#F8F9FA] px-4 py-3 rounded-r-lg text-[#64748B]">
-                  Chia se kien thuc, xay dung cong dong chat luong.
+              <div className="text-[#1E1E1E] leading-8 text-[16px] space-y-6 font-normal">
+                <p className="text-[#64748B]">
+                  In the burgeoning landscape of digital interfaces, we often find ourselves caught in a cycle of visual density.
+                </p>
+                <blockquote className="border-l-4 border-[#7D3BED] pl-4 py-2 text-[#7D3BED] italic text-3xl leading-tight font-semibold">
+                  “Space is the breath of art. It allows the audience to find their own place within the narrative.”
                 </blockquote>
                 <pre className="whitespace-pre-wrap font-sans leading-8">{post.content}</pre>
+                <h2 className="text-4xl font-bold text-[#1E1E1E]">The Cognitive Load of Clutter</h2>
+                <div className="rounded-2xl bg-[#F8F9FA] p-5">
+                  <h3 className="text-sm font-semibold text-[#1E1E1E] mb-2">Key Takeaways</h3>
+                  <ul className="space-y-2 text-sm text-[#64748B]">
+                    <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-[#7D3BED]" />Prioritize information hierarchy over total density.</li>
+                    <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-[#7D3BED]" />Use tonal layering instead of harsh border lines.</li>
+                    <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-[#7D3BED]" />Allow typography to provide the primary structure.</li>
+                  </ul>
+                </div>
               </div>
             ) : (
               <p className="text-muted-foreground">Nội dung đang được cập nhật.</p>
             )}
           </article>
+
+          {/* Comment actions at end of article */}
+          <div className="mt-8 border-t border-[#E7E7E7] pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="rounded-full border-[#E7E7E7]">
+                  <ThumbsUp className="h-4 w-4 mr-1" />
+                  Upvote
+                </Button>
+                <Button variant="outline" className="rounded-full border-[#E7E7E7]">
+                  <Share2 className="h-4 w-4 mr-1" />
+                  Share
+                </Button>
+              </div>
+              <Button className="rounded-full bg-[#7D3BED] hover:bg-[#6c30d6]" onClick={() => setCommentOpen(true)}>
+                <Mic className="h-4 w-4 mr-2" />
+                Add Voice Comment
+              </Button>
+            </div>
+          </div>
         </main>
 
         <aside className="hidden lg:block">
           <div className="sticky top-28 space-y-4">
-            <Card className="bg-[#F8F9FA] border-0">
+            <Card className="bg-[#F8F9FA] border-0 rounded-2xl">
               <CardContent className="p-4">
-                <h3 className="font-semibold text-[#1E1E1E] mb-3">Post insights</h3>
-                <div className="space-y-2 text-sm text-[#64748B]">
-                  <p className="flex items-center gap-2"><ThumbsUp className="h-4 w-4" /> {post.upvote_count ?? 0} upvotes</p>
-                  <p className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> {post.comment_count ?? 0} comments</p>
-                  <p className="flex items-center gap-2"><Clock3 className="h-4 w-4" /> {post.read_time ?? 3} min read</p>
+                <h3 className="text-xs text-[#64748B] uppercase mb-3">About the author</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-12 w-12 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center">
+                    {(post.author_id || 'E').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1E1E1E]">{post.author_id || 'Elena Vance'}</p>
+                    <p className="text-xs text-[#64748B]">Design Focused</p>
+                  </div>
                 </div>
+                <Button variant="outline" className="w-full rounded-full border-[#E7E7E7]">View Profile</Button>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#F8F9FA] border-0">
+            <Card className="bg-[#F8F9FA] border-0 rounded-2xl">
               <CardContent className="p-4">
-                <h3 className="font-semibold text-[#1E1E1E] mb-3">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {(post.tags || ['music']).map((tag) => (
-                    <span key={tag} className="rounded-full bg-[#B39EF5] text-[#1E1E1E] text-xs px-3 py-1">
-                      #{tag}
-                    </span>
+                <h3 className="text-xs text-[#64748B] uppercase mb-3">Related articles</h3>
+                <div className="space-y-3">
+                  {[post, post, post].slice(0, 3).map((p, idx) => (
+                    <Link key={`${p.id}-${idx}`} href={`/blogs/${p.slug}`} className="flex gap-2 group">
+                      <div className="relative h-12 w-12 rounded-lg overflow-hidden">
+                        <Image src={resolveMediaUrl(p.cover_image_url || '/images/job/default-job.jpg')} alt={p.title} fill className="object-cover" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#1E1E1E] line-clamp-2 group-hover:text-[#7D3BED]">{p.title}</p>
+                        <p className="text-[10px] text-[#64748B] mt-1">{p.read_time ?? 5} min read</p>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </CardContent>
             </Card>
           </div>
         </aside>
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[#E7E7E7] bg-white z-30">
-        <div className="mx-auto max-w-[1200px] px-4 md:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="rounded-full border-[#E7E7E7]">
-              <ThumbsUp className="h-4 w-4 mr-1" />
-              Upvote
-            </Button>
-            <Button variant="outline" className="rounded-full border-[#E7E7E7]">
-              <Share2 className="h-4 w-4 mr-1" />
-              Share
-            </Button>
-          </div>
-          <Button className="rounded-full bg-[#7D3BED] hover:bg-[#6c30d6]" onClick={() => setCommentOpen(true)}>
-            <Mic className="h-4 w-4 mr-2" />
-            Add Voice Comment
-          </Button>
-        </div>
       </div>
 
       <Dialog open={commentOpen} onOpenChange={setCommentOpen}>

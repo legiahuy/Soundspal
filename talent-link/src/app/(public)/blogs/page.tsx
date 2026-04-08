@@ -93,41 +93,43 @@ export default function BlogsPage() {
             <>
               {posts[0] && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                  <Card className="bg-[#F8F9FA] border-0 rounded-3xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                    <CardContent className="p-0">
-                      <div className="relative h-64 md:h-[340px]">
-                        <Image
-                          src={resolveMediaUrl(posts[0].cover_image_url || '/images/job/default-job.jpg')}
-                          alt={posts[0].title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="p-8 flex flex-col gap-4">
-                        <div className="flex items-center gap-3 text-xs">
-                          <span className="rounded-full bg-[#f2d9ee] text-[#8a4f79] px-3 py-1 font-medium">
-                            CURATOR&apos;S CHOICE
-                          </span>
-                          <span className="text-[#64748B]">{posts[0].read_time ?? 12} min read</span>
+                  <Link href={`/blogs/${posts[0].slug}`} className="block">
+                    <Card className="bg-[#F8F9FA] border-0 rounded-3xl shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer">
+                      <CardContent className="p-0">
+                        <div className="relative h-64 md:h-[340px]">
+                          <Image
+                            src={resolveMediaUrl(posts[0].cover_image_url || '/images/job/default-job.jpg')}
+                            alt={posts[0].title}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <h2 className="text-5xl leading-[1.05] font-bold text-[#1E1E1E]">
-                          {posts[0].title}
-                        </h2>
-                        <p className="text-[18px] text-[#64748B] leading-relaxed">
-                          {posts[0].short_description || posts[0].brief_description}
-                        </p>
-                        <div className="flex items-center gap-3 pt-2">
-                          <div className="h-10 w-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center text-sm font-medium">
-                            {(posts[0].author_id || 'S').charAt(0).toUpperCase()}
+                        <div className="p-8 flex flex-col gap-4">
+                          <div className="flex items-center gap-3 text-xs">
+                            <span className="rounded-full bg-[#f2d9ee] text-[#8a4f79] px-3 py-1 font-medium">
+                              CURATOR&apos;S CHOICE
+                            </span>
+                            <span className="text-[#64748B]">{posts[0].read_time ?? 12} min read</span>
                           </div>
-                          <div className="text-sm">
-                            <p className="font-medium text-[#1E1E1E]">{posts[0].author_id || 'Soundspal Team'}</p>
-                            <p className="text-[#64748B]">{formatDate(posts[0].published_at || posts[0].created_at)}</p>
+                          <h2 className="text-5xl leading-[1.05] font-bold text-[#1E1E1E]">
+                            {posts[0].title}
+                          </h2>
+                          <p className="text-[18px] text-[#64748B] leading-relaxed">
+                            {posts[0].short_description || posts[0].brief_description}
+                          </p>
+                          <div className="flex items-center gap-3 pt-2">
+                            <div className="h-10 w-10 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center text-sm font-medium">
+                              {(posts[0].author_id || 'S').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="text-sm">
+                              <p className="font-medium text-[#1E1E1E]">{posts[0].author_id || 'Soundspal Team'}</p>
+                              <p className="text-[#64748B]">{formatDate(posts[0].published_at || posts[0].created_at)}</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </motion.div>
               )}
 
