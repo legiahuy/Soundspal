@@ -6,16 +6,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   ArrowLeft,
-  Bookmark,
   Calendar,
-  Clock3,
   Loader2,
-  MessageCircle,
-  Mic,
-  Send,
-  Share2,
-  UserPlus,
-  ThumbsUp,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -25,8 +17,6 @@ import { resolveMediaUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Textarea } from '@/components/ui/textarea'
 
 function formatDate(value?: string) {
   if (!value) return ''
@@ -44,7 +34,6 @@ export default function BlogDetailPage() {
   const [post, setPost] = useState<BlogPost | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [commentOpen, setCommentOpen] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -98,20 +87,17 @@ export default function BlogDetailPage() {
 
   const cover = post.cover_image_url ? resolveMediaUrl(post.cover_image_url) : ''
   const shortDesc = post.short_description || post.brief_description
+  const content = post.content || ''
+  const hasHtmlContent = /<\/?[a-z][\s\S]*>/i.test(content)
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] pb-12">
       <section className="border-b border-[#E7E7E7] pt-24 pb-8">
         <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6">
-          <div className="flex items-center justify-between mb-6">
-            <Button variant="ghost" onClick={() => router.back()} className="-ml-2">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('back')}
-            </Button>
-            <button className="rounded-full p-2 hover:bg-[#F8F9FA] transition-colors">
-              <Bookmark className="h-5 w-5 text-[#64748B]" />
-            </button>
-          </div>
+          <Button variant="ghost" onClick={() => router.back()} className="-ml-2 mb-6">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('back')}
+          </Button>
         </div>
       </section>
 
@@ -133,32 +119,14 @@ export default function BlogDetailPage() {
 
           {shortDesc && <p className="text-[#64748B] text-lg leading-relaxed mb-6">{shortDesc}</p>}
 
-          {/* Actions row (should appear directly under short_description) */}
-          <div className="mb-6 flex items-center justify-between border-b border-[#E7E7E7] pb-3">
-            <div className="flex items-center gap-4 text-xs text-[#64748B]">
-              <span>{post.read_time ?? 12} min read</span>
-              <span className="flex items-center gap-1">
-                <ThumbsUp className="h-3.5 w-3.5" /> {post.upvote_count ?? 0}
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageCircle className="h-3.5 w-3.5" /> {post.comment_count ?? 0}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-[#64748B]">
-              <button className="rounded-full p-2 hover:bg-[#F8F9FA]" aria-label="Upvote">
-                <ThumbsUp className="h-4 w-4" />
-              </button>
-              <button className="rounded-full p-2 hover:bg-[#F8F9FA]" aria-label="Bookmark">
-                <Bookmark className="h-4 w-4" />
-              </button>
-              <button className="rounded-full p-2 hover:bg-[#F8F9FA]" aria-label="Share">
-                <Share2 className="h-4 w-4" />
-              </button>
-            </div>
+          <div className="mb-6 flex items-center gap-4 border-b border-[#E7E7E7] pb-3 text-xs text-[#64748B]">
+            <span>{post.read_time ?? 12} min read</span>
+            <span>{post.upvote_count ?? 0} upvotes</span>
+            <span>{post.comment_count ?? 0} comments</span>
           </div>
 
-          <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-[#E7E7E7] px-4 py-3">
-            <div className="flex items-center gap-3">
+          <div className="mb-6 flex items-center gap-4 rounded-2xl border border-[#E7E7E7] px-4 py-3">
+            <div className="flex items-center gap-4 text-xs text-[#64748B]">
               <div className="h-10 w-10 rounded-full bg-[#1E1E1E] text-white text-sm flex items-center justify-center">
                 {(post.author_id || 'A').charAt(0).toUpperCase()}
               </div>
@@ -167,10 +135,6 @@ export default function BlogDetailPage() {
                 <p className="text-xs text-[#64748B]">Design Lead at Linear Systems</p>
               </div>
             </div>
-            <Button variant="outline" className="rounded-full h-8 px-3 text-xs border-[#E7E7E7]">
-              <UserPlus className="h-3.5 w-3.5 mr-1" />
-              Follow
-            </Button>
           </div>
 
           {cover && (
@@ -180,49 +144,20 @@ export default function BlogDetailPage() {
           )}
 
           <article className="max-w-none">
-            {post.content ? (
-              <div className="text-[#1E1E1E] leading-8 text-[16px] space-y-6 font-normal">
-                <p className="text-[#64748B]">
-                  In the burgeoning landscape of digital interfaces, we often find ourselves caught in a cycle of visual density.
-                </p>
-                <blockquote className="border-l-4 border-[#7D3BED] pl-4 py-2 text-[#7D3BED] italic text-3xl leading-tight font-semibold">
-                  “Space is the breath of art. It allows the audience to find their own place within the narrative.”
-                </blockquote>
-                <pre className="whitespace-pre-wrap font-sans leading-8">{post.content}</pre>
-                <h2 className="text-4xl font-bold text-[#1E1E1E]">The Cognitive Load of Clutter</h2>
-                <div className="rounded-2xl bg-[#F8F9FA] p-5">
-                  <h3 className="text-sm font-semibold text-[#1E1E1E] mb-2">Key Takeaways</h3>
-                  <ul className="space-y-2 text-sm text-[#64748B]">
-                    <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-[#7D3BED]" />Prioritize information hierarchy over total density.</li>
-                    <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-[#7D3BED]" />Use tonal layering instead of harsh border lines.</li>
-                    <li className="flex items-start gap-2"><span className="mt-1 h-2 w-2 rounded-full bg-[#7D3BED]" />Allow typography to provide the primary structure.</li>
-                  </ul>
-                </div>
+            {content ? (
+              <div className="text-[#1E1E1E] leading-8 text-[16px] font-normal">
+                {hasHtmlContent ? (
+                  <div className="prose prose-neutral max-w-none prose-headings:text-[#1E1E1E] prose-p:text-[#1E1E1E] prose-blockquote:border-[#7D3BED] prose-blockquote:text-[#5b21b6]">
+                    <div dangerouslySetInnerHTML={{ __html: content }} />
+                  </div>
+                ) : (
+                  <pre className="whitespace-pre-wrap font-sans leading-8">{content}</pre>
+                )}
               </div>
             ) : (
               <p className="text-muted-foreground">Nội dung đang được cập nhật.</p>
             )}
           </article>
-
-          {/* Comment actions at end of article */}
-          <div className="mt-8 border-t border-[#E7E7E7] pt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" className="rounded-full border-[#E7E7E7]">
-                  <ThumbsUp className="h-4 w-4 mr-1" />
-                  Upvote
-                </Button>
-                <Button variant="outline" className="rounded-full border-[#E7E7E7]">
-                  <Share2 className="h-4 w-4 mr-1" />
-                  Share
-                </Button>
-              </div>
-              <Button className="rounded-full bg-[#7D3BED] hover:bg-[#6c30d6]" onClick={() => setCommentOpen(true)}>
-                <Mic className="h-4 w-4 mr-2" />
-                Add Voice Comment
-              </Button>
-            </div>
-          </div>
         </main>
 
         <aside className="hidden lg:block">
@@ -264,37 +199,6 @@ export default function BlogDetailPage() {
           </div>
         </aside>
       </div>
-
-      <Dialog open={commentOpen} onOpenChange={setCommentOpen}>
-        <DialogContent className="max-w-[600px] p-0 overflow-hidden">
-          <DialogHeader className="px-6 py-4 border-b border-[#E7E7E7]">
-            <DialogTitle>Multimedia Comments</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto px-6 py-4 space-y-4 bg-white">
-            <div className="rounded-xl bg-[#F8F9FA] p-3">
-              <p className="text-sm font-medium text-[#1E1E1E]">Anna</p>
-              <p className="text-sm text-[#64748B] mt-1">Bai viet rat huu ich, cam on ban!</p>
-              <p className="text-xs text-[#64748B] mt-2">2h ago</p>
-            </div>
-            <div className="rounded-xl bg-[#F8F9FA] p-3">
-              <p className="text-sm font-medium text-[#1E1E1E]">Minh</p>
-              <div className="mt-2 flex items-center gap-2">
-                <Button size="icon" className="h-8 w-8 rounded-full bg-[#7D3BED] hover:bg-[#6c30d6]">
-                  <Mic className="h-4 w-4" />
-                </Button>
-                <div className="flex-1 h-2 rounded-full bg-[#E7E7E7]" />
-                <span className="text-xs text-[#64748B]">0:45</span>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-[#E7E7E7] bg-[#F1F5F9] p-3 flex items-end gap-2">
-            <Textarea placeholder="Write or record a reply..." className="min-h-[44px] bg-transparent border-0 shadow-none" />
-            <Button size="icon" className="rounded-full bg-[#F471B7] hover:bg-[#dd5fa8]">
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

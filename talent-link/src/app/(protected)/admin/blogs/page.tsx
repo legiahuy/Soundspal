@@ -10,12 +10,14 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Compass,
+  Eye,
   FileText,
-  Flame,
-  Home,
+  Lightbulb,
+  Moon,
   Pencil,
   Plus,
+  Search,
+  Bell,
   UploadCloud,
 } from 'lucide-react'
 
@@ -77,6 +79,10 @@ export default function AdminBlogsPage() {
 
   const totalPages = Math.ceil(pagination.total / pagination.limit)
   const currentPage = Math.floor(pagination.offset / pagination.limit) + 1
+  const publishedCount = useMemo(
+    () => posts.filter((post) => (post.status || 'draft').toLowerCase() === 'published').length,
+    [posts],
+  )
 
   const goToPage = (page: number) => {
     setPagination((prev) => ({ ...prev, offset: (page - 1) * prev.limit }))
@@ -113,262 +119,253 @@ export default function AdminBlogsPage() {
   )
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[220px_minmax(0,1fr)_280px] gap-6">
-      <aside className="hidden xl:block">
-        <div className="sticky top-8 space-y-2">
-          {[
-            { label: 'Home', icon: Home },
-            { label: 'Trending', icon: Flame },
-            { label: 'Topics', icon: Compass },
-          ].map((item, idx) => (
-            <div
-              key={item.label}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
-                idx === 0 ? 'bg-[#F8F9FA] text-[#7D3BED] font-medium' : 'text-[#64748B]'
-              }`}
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      <div>
+    <div className="space-y-6">
       <motion.div
-        className="mb-8"
+        className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
       >
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h1 className="text-4xl font-bold bg-linear-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              {t('sidebar.blogs')}
-            </h1>
-            <p className="text-muted-foreground text-lg">Tạo, chỉnh sửa và publish bài viết</p>
+        <div className="min-w-0">
+          <h1 className="text-4xl font-semibold tracking-tight">{t('sidebar.blogs')}</h1>
+          <p className="mt-1 text-muted-foreground">Manage your creative intellectual property.</p>
+        </div>
+
+        <div className="flex w-full items-center gap-3 lg:w-auto">
+          <div className="relative flex-1 lg:w-[360px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Tìm kiếm bài viết..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-11 rounded-full border-border/60 bg-card pl-10 pr-4"
+            />
           </div>
-          <Button asChild className="gap-2">
+          <Button variant="ghost" size="icon" className="hidden rounded-full lg:inline-flex">
+            <Bell className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hidden rounded-full lg:inline-flex">
+            <Moon className="h-5 w-5" />
+          </Button>
+          <Button asChild className="h-11 rounded-full px-6">
             <Link href="/admin/blogs/new">
-              <Plus className="w-4 h-4" />
-              Tạo bài viết
+              <Plus className="mr-2 h-4 w-4" />
+              New Blog
             </Link>
           </Button>
         </div>
-
-        <div className="mt-4 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Input
-              placeholder="Tìm kiếm theo tiêu đề/slug..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-card/70 backdrop-blur-sm border-border/50"
-            />
-          </div>
-        </div>
       </motion.div>
 
-      <motion.div
-        className="mb-6 flex items-center justify-between p-4 rounded-lg bg-card/50 backdrop-blur-sm border border-border/50"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <div className="text-sm font-medium">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div>
+          <motion.div
+            className="mb-5 rounded-2xl border border-border/60 bg-card/60 p-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span className="text-muted-foreground">
+                {loading ? tCommon('loading') : `Showing ${posts.length} of ${pagination.total} publications`}
+              </span>
+              <span className="text-muted-foreground">
+                Trang <span className="font-medium text-foreground">{currentPage}</span> /{' '}
+                <span className="font-medium text-foreground">{totalPages || 1}</span>
+              </span>
+            </div>
+          </motion.div>
+
           {loading ? (
-            <span className="text-muted-foreground">{tCommon('loading')}</span>
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-40 animate-pulse rounded-2xl border border-border/40 bg-card/60"
+                />
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            <motion.div
+              className="rounded-2xl border border-border/50 bg-card/40 py-16 text-center"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <FileText className="mx-auto mb-4 h-14 w-14 text-muted-foreground/50" />
+              <p className="text-muted-foreground text-lg">Chưa có bài viết nào</p>
+            </motion.div>
           ) : (
-            <span>
-              <span className="text-primary font-bold text-lg">{pagination.total}</span>{' '}
-              <span className="text-muted-foreground">bài viết</span>
-            </span>
+            <motion.div
+              className="space-y-4"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+            >
+              {posts.map((post) => {
+                const cover = post.cover_image_url ? resolveMediaUrl(post.cover_image_url) : ''
+                const status = (post.status || 'draft').toLowerCase()
+                const isPublished = status === 'published'
+                const statusLabel = isPublished ? 'published' : 'draft'
+                return (
+                  <motion.div key={post.id} variants={fadeInUp}>
+                    <Card className="group overflow-hidden rounded-2xl border-border/50 bg-card/80 transition-colors hover:border-primary/30">
+                      <CardContent className="flex flex-col gap-4 p-4 md:flex-row">
+                        <div className="relative h-32 w-full overflow-hidden rounded-xl bg-muted md:h-28 md:w-52 md:shrink-0">
+                          {cover ? (
+                            <Image
+                              src={cover}
+                              alt={post.title}
+                              fill
+                              className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-linear-to-br from-primary/15 to-transparent" />
+                          )}
+                        </div>
+
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+                            <Badge variant={isPublished ? 'default' : 'secondary'} className="capitalize">
+                              {statusLabel}
+                            </Badge>
+                            {post.published_at && (
+                              <span className="text-muted-foreground">{formatDate(post.published_at)}</span>
+                            )}
+                          </div>
+
+                          <h3 className="line-clamp-2 text-xl font-semibold leading-tight">{post.title}</h3>
+                          <p className="mt-1 truncate text-xs text-muted-foreground">/{post.slug}</p>
+                          {post.brief_description && (
+                            <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                              {post.brief_description}
+                            </p>
+                          )}
+
+                          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2">
+                              <Link href={`/admin/blogs/${post.id}/edit`}>
+                                <Pencil className="h-3.5 w-3.5" />
+                                Sửa
+                              </Link>
+                            </Button>
+                            <Button asChild variant="ghost" size="sm" className="h-8 gap-1 px-2">
+                              <Link href={`/blogs/${post.slug}`} target="_blank">
+                                <Eye className="h-3.5 w-3.5" />
+                                Xem
+                              </Link>
+                            </Button>
+                            <Button
+                              variant={isPublished ? 'secondary' : 'outline'}
+                              size="sm"
+                              disabled={isPublished || actionLoading === post.id}
+                              onClick={() => handlePublish(post.id)}
+                              className="ml-auto h-8 gap-1 rounded-full px-3"
+                            >
+                              <UploadCloud className="h-3.5 w-3.5" />
+                              {actionLoading === post.id ? '...' : isPublished ? 'Đã publish' : 'Xuất bản ngay'}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </motion.div>
+          )}
+
+          {!loading && totalPages > 1 && (
+            <motion.div
+              className="mt-8 flex items-center justify-center gap-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+            >
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="rounded-full"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                let pageNum: number
+                if (totalPages <= 3) pageNum = i + 1
+                else if (currentPage <= 2) pageNum = i + 1
+                else if (currentPage >= totalPages - 1) pageNum = totalPages - 2 + i
+                else pageNum = currentPage - 1 + i
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? 'default' : 'outline'}
+                    size="icon"
+                    onClick={() => goToPage(pageNum)}
+                    className="rounded-full"
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              })}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="rounded-full"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
           )}
         </div>
-        <div className="text-sm text-muted-foreground">
-          Trang <span className="font-medium text-foreground">{currentPage}</span> /{' '}
-          <span className="font-medium text-foreground">{totalPages || 1}</span>
-        </div>
-      </motion.div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-80 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm animate-pulse"
-            />
-          ))}
-        </div>
-      ) : posts.length === 0 ? (
-        <motion.div
-          className="text-center py-16 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-          <p className="text-muted-foreground text-lg">Chưa có bài viết nào</p>
-        </motion.div>
-      ) : (
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-        >
-          {posts.map((post) => {
-            const cover = post.cover_image_url ? resolveMediaUrl(post.cover_image_url) : ''
-            const status = (post.status || 'draft').toLowerCase()
-            const isPublished = status === 'published'
-            return (
-              <motion.div key={post.id} variants={fadeInUp} className="h-full">
-                <Card className="group relative border-border/50 bg-card/70 backdrop-blur-sm transition-all duration-300 flex flex-col hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 overflow-hidden h-full">
-                  {cover ? (
-                    <div className="relative h-40 w-full">
-                      <Image
-                        src={cover}
-                        alt={post.title}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      />
-                    </div>
-                  ) : (
-                    <div className="h-40 w-full bg-linear-to-br from-primary/12 via-primary/6 to-transparent" />
-                  )}
+        <aside className="space-y-4">
+          <Card className="rounded-3xl border border-primary/20 bg-card/80">
+            <CardContent className="p-5">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Quick overview</p>
+              <div className="mt-4 space-y-3">
+                <div>
+                  <p className="text-4xl font-bold">{pagination.total}</p>
+                  <p className="text-xs uppercase text-muted-foreground">Total posts</p>
+                </div>
+                <div>
+                  <p className="text-3xl font-semibold">{publishedCount}</p>
+                  <p className="text-xs uppercase text-muted-foreground">Published</p>
+                </div>
+                <p className="text-sm font-medium text-primary">+24% this week</p>
+              </div>
+            </CardContent>
+          </Card>
 
-                  <CardContent className="p-4 flex flex-col gap-3 h-full">
-                    <div className="flex items-center justify-between gap-2">
-                      <Badge variant={isPublished ? 'default' : 'secondary'} className="capitalize">
-                        {status}
-                      </Badge>
-                      {post.published_at && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{formatDate(post.published_at)}</span>
-                        </div>
-                      )}
-                    </div>
+          <Card className="rounded-3xl border border-border/60 bg-card/80">
+            <CardContent className="p-5">
+              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Lightbulb className="h-4 w-4" />
+              </div>
+              <h3 className="font-semibold">Editor&apos;s Insight</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Ưu tiên ALT rõ ràng và danh mục phù hợp để tăng khả năng tiếp cận bài viết từ tìm kiếm.
+              </p>
+              <p className="mt-3 text-sm font-medium text-primary">Optimize now</p>
+            </CardContent>
+          </Card>
 
-                    <div className="space-y-1">
-                      <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors">
-                        {post.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground truncate">/{post.slug}</p>
-                    </div>
-
-                    {post.brief_description && (
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {post.brief_description}
-                      </p>
-                    )}
-
-                    <div className="grow" />
-
-                    <div className="flex gap-2">
-                      <Button asChild variant="outline" size="sm" className="flex-1 gap-2">
-                        <Link href={`/admin/blogs/${post.id}/edit`}>
-                          <Pencil className="w-4 h-4" />
-                          Sửa
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isPublished || actionLoading === post.id}
-                        onClick={() => handlePublish(post.id)}
-                        className="gap-2 hover:bg-primary/10"
-                      >
-                        <UploadCloud className="w-4 h-4" />
-                        {actionLoading === post.id ? '...' : 'Publish'}
-                      </Button>
-                      <Button asChild variant="ghost" size="sm">
-                        <Link href={`/blogs/${post.slug}`} target="_blank">
-                          Xem
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )
-          })}
-        </motion.div>
-      )}
-
-      {!loading && totalPages > 1 && (
-        <motion.div
-          className="mt-8 flex items-center justify-center gap-2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="hover:bg-primary/10 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            {tCommon('previous')}
-          </Button>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum: number
-              if (totalPages <= 5) pageNum = i + 1
-              else if (currentPage <= 3) pageNum = i + 1
-              else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i
-              else pageNum = currentPage - 2 + i
-
-              return (
-                <Button
-                  key={pageNum}
-                  variant={currentPage === pageNum ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => goToPage(pageNum)}
-                  className="w-10 hover:bg-primary/10 transition-colors"
-                >
-                  {pageNum}
-                </Button>
-              )
-            })}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="hover:bg-primary/10 transition-colors"
-          >
-            {tCommon('next')}
-            <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        </motion.div>
-      )}
+          <Card className="rounded-3xl border-0 bg-linear-to-r from-[#6D28D9] to-[#7C3AED] text-white">
+            <CardContent className="p-5">
+              <h3 className="text-2xl font-semibold leading-tight">Schedule your next masterpiece</h3>
+              <p className="mt-2 text-sm text-white/80">
+                Lên lịch đăng bài để giữ nhịp độ xuất bản đều đặn cho team content.
+              </p>
+              <Button className="mt-5 w-full rounded-full bg-white text-[#6D28D9] hover:bg-white/90">
+                Try Smart Schedule
+              </Button>
+            </CardContent>
+          </Card>
+        </aside>
       </div>
-
-      <aside className="hidden xl:block">
-        <div className="sticky top-8 space-y-4">
-          <Card className="bg-[#F8F9FA] border-[#E7E7E7]">
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold text-[#1E1E1E] mb-2">Quick stats</h3>
-              <p className="text-sm text-[#64748B]">Total posts: {pagination.total}</p>
-              <p className="text-sm text-[#64748B]">Current page: {currentPage}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#F8F9FA] border-[#E7E7E7]">
-            <CardContent className="p-4">
-              <h3 className="text-sm font-semibold text-[#1E1E1E] mb-2">Tips</h3>
-              <ul className="space-y-2 text-sm text-[#64748B]">
-                <li>Viet short_description ro rang.</li>
-                <li>Gan tag de de discover.</li>
-                <li>Publish khi da review version history.</li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-      </aside>
     </div>
   )
 }

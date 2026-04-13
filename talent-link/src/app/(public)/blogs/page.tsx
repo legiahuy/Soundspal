@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, Variants } from 'framer-motion'
@@ -12,9 +12,10 @@ import {
   ThumbsUp,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 import { blogService } from '@/services/blogService'
-import type { BlogPost } from '@/types/blog'
+import type { BlogPost, BookmarkListItem } from '@/types/blog'
 import { resolveMediaUrl } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,14 @@ function formatDate(value?: string) {
 export default function BlogsPage() {
   const t = useTranslations('BlogsPage')
   const [posts, setPosts] = useState<BlogPost[]>([])
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set())
+  const [bookmarkLoadingId, setBookmarkLoadingId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'explore' | 'bookmarks'>('explore')
+  const [bookmarkLists, setBookmarkLists] = useState<BookmarkListItem[]>([])
+  const [selectedListId, setSelectedListId] = useState<string>('')
+  const [newListName, setNewListName] = useState('')
+  const [creatingList, setCreatingList] = useState(false)
+  const listSelectRef = useRef<HTMLSelectElement | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,13 +59,45 @@ export default function BlogsPage() {
 
   useEffect(() => {
     let active = true
+    const loadLists = async () => {
+      const lists = await blogService.getBookmarkLists()
+      if (active) setBookmarkLists(lists)
+    }
+    loadLists()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    const loadBookmarkedIds = async () => {
+      try {
+        const allBookmarks = await blogService.getBookmarks()
+        if (!active) return
+        setBookmarkedIds(new Set(allBookmarks.map((item) => item.id).filter(Boolean)))
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    loadBookmarkedIds()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
     const run = async () => {
       try {
         setLoading(true)
         setError(null)
-        const res = await blogService.listPosts({ limit: 12, offset: 0, status: 'published' })
+        const data =
+          activeTab === 'bookmarks'
+            ? await blogService.getBookmarks(selectedListId || undefined)
+            : (await blogService.listPosts({ limit: 12, offset: 0, status: 'published' })).posts
         if (!active) return
-        setPosts(res.posts || [])
+        setPosts(data || [])
       } catch (e) {
         console.error(e)
         if (!active) return
@@ -69,17 +110,122 @@ export default function BlogsPage() {
     return () => {
       active = false
     }
-  }, [t])
+  }, [t, activeTab, selectedListId])
+
+  const handleBookmark = async (event: React.MouseEvent, postId: string) => {
+    event.preventDefault()
+    event.stopPropagation()
+    try {
+      setBookmarkLoadingId(postId)
+      await blogService.bookmarkPost(postId, selectedListId ? { list_id: selectedListId } : undefined)
+      setBookmarkedIds((prev) => {
+        const next = new Set(prev)
+        next.add(postId)
+        return next
+      })
+      toast.success('Đã lưu bài viết vào bookmarks')
+      if (activeTab === 'bookmarks') {
+        const data = await blogService.getBookmarks(selectedListId || undefined)
+        setPosts(data || [])
+      } else {
+        const refreshedBookmarks = await blogService.getBookmarks(selectedListId || undefined)
+        setPosts((prev) => {
+          const exists = prev.some((item) => item.id === postId)
+          if (exists) return prev
+          const matched = refreshedBookmarks.find((item) => item.id === postId)
+          return matched ? [matched, ...prev] : prev
+        })
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error('Lưu bookmark thất bại')
+    } finally {
+      setBookmarkLoadingId(null)
+    }
+  }
+
+  const handleCreateList = async () => {
+    const name = newListName.trim()
+    if (!name) {
+      toast.error('Vui lòng nhập tên danh sách')
+      return
+    }
+    try {
+      setCreatingList(true)
+      const created = await blogService.createBookmarkList(name)
+      const lists = await blogService.getBookmarkLists()
+      setBookmarkLists(lists)
+      setSelectedListId(created.id)
+      setNewListName('')
+      setActiveTab('bookmarks')
+      setTimeout(() => listSelectRef.current?.focus(), 0)
+      toast.success('Tạo bookmark list thành công')
+    } catch (error) {
+      console.error(error)
+      toast.error('Tạo bookmark list thất bại')
+    } finally {
+      setCreatingList(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] pb-20 pt-24 md:pt-28">
       <div className="mx-auto w-full max-w-[1320px] px-4 md:px-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8">
         <main>
           <div className="mb-5 flex items-center gap-6 text-sm">
-            <span className="text-[#7D3BED] font-medium border-b-2 border-[#7D3BED] pb-1">Explore</span>
-            <span className="text-[#64748B]">Bookmarks</span>
-            <span className="text-[#64748B]">Following</span>
+            <button
+              onClick={() => setActiveTab('explore')}
+              className={
+                activeTab === 'explore'
+                  ? 'text-[#7D3BED] font-medium border-b-2 border-[#7D3BED] pb-1'
+                  : 'text-[#64748B]'
+              }
+            >
+              Explore
+            </button>
+            <button
+              onClick={() => setActiveTab('bookmarks')}
+              className={
+                activeTab === 'bookmarks'
+                  ? 'text-[#7D3BED] font-medium border-b-2 border-[#7D3BED] pb-1'
+                  : 'text-[#64748B]'
+              }
+            >
+              Bookmarks
+            </button>
           </div>
+
+          {activeTab === 'bookmarks' && (
+            <div className="mb-5 rounded-2xl border border-[#E7E7E7] bg-[#F8F9FA] p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                <select
+                  ref={listSelectRef}
+                  className="h-10 rounded-lg border border-[#E7E7E7] bg-white px-3 text-sm text-[#1E1E1E]"
+                  value={selectedListId}
+                  onChange={(event) => setSelectedListId(event.target.value)}
+                >
+                  <option value="">All bookmarks</option>
+                  {bookmarkLists.map((list) => (
+                    <option key={list.id} value={list.id}>
+                      {list.name}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="flex flex-1 items-center gap-2">
+                  <input
+                    value={newListName}
+                    onChange={(event) => setNewListName(event.target.value)}
+                    placeholder="Tên bookmark list mới"
+                    className="h-10 flex-1 rounded-lg border border-[#E7E7E7] bg-white px-3 text-sm"
+                  />
+                  <Button type="button" onClick={handleCreateList} disabled={creatingList} className="h-10">
+                    {creatingList ? 'Đang tạo...' : 'Tạo list'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {loading && <p className="text-[#64748B]">{t('loading')}</p>}
           {!loading && error && <p className="text-destructive">{error}</p>}
@@ -125,6 +271,19 @@ export default function BlogsPage() {
                               <p className="font-medium text-[#1E1E1E]">{posts[0].author_id || 'Soundspal Team'}</p>
                               <p className="text-[#64748B]">{formatDate(posts[0].published_at || posts[0].created_at)}</p>
                             </div>
+                            <button
+                              disabled={bookmarkLoadingId === posts[0].id}
+                              className="ml-auto rounded-full p-2 hover:bg-[#ececec]"
+                              onClick={(event) => handleBookmark(event, posts[0].id)}
+                              aria-label="Bookmark post"
+                            >
+                              <BookMarked
+                                className={`h-4 w-4 ${
+                                  bookmarkedIds.has(posts[0].id) ? 'text-[#7D3BED]' : 'text-[#64748B]'
+                                }`}
+                                fill={bookmarkedIds.has(posts[0].id) ? 'currentColor' : 'none'}
+                              />
+                            </button>
                           </div>
                         </div>
                       </CardContent>
@@ -135,7 +294,7 @@ export default function BlogsPage() {
 
               <div className="mb-5">
                 <h3 className="text-[32px] font-bold text-[#1E1E1E] border-b-2 border-[#7D3BED] inline-block pb-1">
-                  Latest Insights
+                  {activeTab === 'bookmarks' ? 'Your Bookmarks' : 'Latest Insights'}
                 </h3>
               </div>
 
@@ -166,7 +325,19 @@ export default function BlogsPage() {
                               <span>{formatDate(post.published_at || post.created_at)}</span>
                               <span className="flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" />{post.upvote_count ?? 0}</span>
                               <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{post.comment_count ?? 0}</span>
-                              <span className="ml-auto"><BookMarked className="h-3.5 w-3.5" /></span>
+                              <button
+                                disabled={bookmarkLoadingId === post.id}
+                                className="ml-auto rounded-full p-1 hover:bg-[#ececec]"
+                                onClick={(event) => handleBookmark(event, post.id)}
+                                aria-label="Bookmark post"
+                              >
+                                <BookMarked
+                                  className={`h-3.5 w-3.5 ${
+                                    bookmarkedIds.has(post.id) ? 'text-[#7D3BED]' : 'text-[#64748B]'
+                                  }`}
+                                  fill={bookmarkedIds.has(post.id) ? 'currentColor' : 'none'}
+                                />
+                              </button>
                             </div>
                           </div>
                         </CardContent>

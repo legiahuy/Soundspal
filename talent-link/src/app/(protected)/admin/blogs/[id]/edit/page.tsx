@@ -112,21 +112,20 @@ export default function AdminBlogEditPage() {
         short_description: shortDescription.trim() || undefined,
         topic_id: topicId.trim() || undefined,
         tags: tags.length > 0 ? tags : undefined,
-        content: contentHtml.trim(),
       }
 
       const updated = await blogService.updatePost(post.id, payload as UpdateBlogPostRequest)
 
-      // Some backends require content to be updated separately
-      if (payload.content) {
+      const contentPayload = contentHtml.trim()
+      if (contentPayload) {
         try {
-          await blogService.updateContent(post.id, payload.content)
+          await blogService.updateContent(post.id, contentPayload)
         } catch {
-          // ignore; updatePost might already include content
+          // ignore to avoid breaking metadata save
         }
       }
 
-      setPost((prev) => ({ ...(prev || updated), ...updated, ...payload }))
+      setPost((prev) => ({ ...(prev || updated), ...updated, ...payload, content: contentPayload }))
       toast.success('Đã lưu thay đổi')
     } catch (e) {
       console.error(e)
@@ -156,10 +155,25 @@ export default function AdminBlogEditPage() {
     setUploading(true)
     try {
       const res = await blogService.uploadMedia(post.id, file)
-      const url = res?.url || res?.file_url || res?.data?.url || res?.data?.file_url
+      const url = res?.url || res?.file_url
       if (url) {
-        await blogService.updatePost(post.id, { cover_image_url: url })
-        setPost((prev) => (prev ? { ...prev, cover_image_url: url } : prev))
+        setPost((prev) =>
+          prev
+            ? {
+                ...prev,
+                cover_image_url: url,
+                media: [
+                  ...(prev.media || []),
+                  {
+                    id: `local-media-${Date.now()}`,
+                    media_type: 'image',
+                    url,
+                    post_id: prev.id,
+                  },
+                ],
+              }
+            : prev,
+        )
       }
       toast.success('Upload ảnh thành công')
     } catch (e) {

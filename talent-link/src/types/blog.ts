@@ -88,3 +88,21 @@ export interface BlogVersionsResponse {
   versions: BlogVersion[]
   total?: number
 }
+
+export interface BookmarkPayload {
+  list_id?: string
+}
+
+export interface BookmarkItem {
+  created_at?: string
+  list_id?: string
+  post_id?: string
+  user_id?: string
+}
+
+export interface BookmarkListItem {
+  id: string
+  name: string
+  user_id?: string
+  created_at?: string
+}
