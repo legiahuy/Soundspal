@@ -16,7 +16,8 @@
       "myApplications": "My Applications",
       "adminDashboard": "Admin Dashboard",
       "settings": "Settings",
-      "logout": "Logout"
+      "logout": "Logout",
+      "BlogsManage": "Blogs Management"
     }
   },
   "BlogsPage": {

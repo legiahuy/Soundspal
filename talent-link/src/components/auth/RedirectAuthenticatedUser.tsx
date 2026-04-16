@@ -15,7 +15,9 @@ export default function RedirectAuthenticated({
 }) {
   const router = useRouter()
   const { user, isInitialized } = useAuthStore()
-  const destination = redirectTo ?? (user?.username ? `/profile/${user.username}` : '/')
+  const normalizedRole = user?.role?.toLowerCase()
+  const destination =
+    redirectTo ?? (normalizedRole === 'admin' ? '/admin' : user?.username ? `/profile/${user.username}` : '/')
 
   useEffect(() => {
     if (isInitialized && user) {

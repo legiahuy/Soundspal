@@ -14,9 +14,10 @@
       "myProfile": "Hồ sơ của tôi",
       "myJobPosts": "Việc làm đã đăng",
       "myApplications": "Ứng tuyển",
-      "adminDashboard": "Admin Dashboard",
+      "adminDashboard": "Báo Cáo quản trị",
       "settings": "Cài đặt",
-      "logout": "Đăng xuất"
+      "logout": "Đăng xuất",
+      "BlogsManage": "Quản lý Blog"
     }
   },
   "BlogsPage": {

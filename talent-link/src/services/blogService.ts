@@ -1,6 +1,7 @@
 import axiosClient from '@/api/axios'
 import { userService } from '@/services/userService'
 import type {
+  BlogComment,
   BlogListParams,
   BlogListResponse,
   BlogPost,
@@ -8,6 +9,7 @@ import type {
   BookmarkItem,
   BookmarkListItem,
   BookmarkPayload,
+  CreateBlogCommentPayload,
   CreateBlogPostRequest,
   UpdateBlogPostRequest,
 } from '@/types/blog'
@@ -15,8 +17,23 @@ import type {
 const BLOG_DRAFT_CACHE_KEY = 'talentlink_blog_draft_cache_v1'
 const BOOKMARK_LIST_CACHE_KEY = 'talentlink_bookmark_lists_v1'
 
-function unwrap<T>(payload: any): T {
-  return (payload?.data ?? payload) as T
+function unwrap<T>(payload: unknown): T {
+  if (payload && typeof payload === 'object' && 'data' in payload) {
+    return (payload as { data: unknown }).data as T
+  }
+  return payload as T
+}
+
+type BlogVoteType = 'up' | 'down'
+
+function normalizeVoteType(input: string): BlogVoteType {
+  const raw = String(input || '').trim().toLowerCase()
+  if (!raw) throw new Error('Vote type is required')
+
+  if (raw === 'up' || raw === 'like' || raw === 'upvote') return 'up'
+  if (raw === 'down' || raw === 'dislike' || raw === 'downvote') return 'down'
+
+  throw new Error(`Invalid vote type: ${input}`)
 }
 
 function canUseBrowserStorage() {
@@ -93,51 +110,77 @@ function inferMediaType(fileNameOrUrl?: string): 'image' | 'video' | 'audio' {
   return 'image'
 }
 
-function normalizePost(raw: any): BlogPost {
-  const p = raw || {}
-  const firstMediaUrl = Array.isArray(p.media) && p.media.length > 0 ? p.media[0]?.url : undefined
+function normalizePost(raw: unknown): BlogPost {
+  const p = (raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}) as Record<string, unknown>
+  const media = (p.media as unknown) as unknown[]
+  const firstMediaUrl = Array.isArray(media) && media.length > 0 ? (media[0] as { url?: string } | undefined)?.url : undefined
   return {
-    id: p.id,
-    title: p.title,
-    slug: p.slug,
-    content: p.content,
-    short_description: p.short_description,
-    brief_description: p.brief_description ?? p.short_description,
-    author_id: p.author_id,
-    topic_id: p.topic_id,
-    tags: Array.isArray(p.tags) ? p.tags : [],
-    media: Array.isArray(p.media) ? p.media : [],
-    bookmark_count: p.bookmark_count ?? 0,
-    comment_count: p.comment_count ?? 0,
-    upvote_count: p.upvote_count ?? 0,
-    downvote_count: p.downvote_count ?? 0,
-    view_count: p.view_count ?? 0,
-    read_time: p.read_time ?? 0,
-    status: p.status,
-    created_at: p.created_at,
-    updated_at: p.updated_at,
-    published_at: p.published_at,
-    cover_image_url: p.cover_image_url ?? firstMediaUrl,
-    visibility: p.visibility,
+    id: p.id as string,
+    title: p.title as string,
+    slug: p.slug as string,
+    content: p.content as string | undefined,
+    short_description: p.short_description as string | undefined,
+    brief_description: (p.brief_description ?? p.short_description) as string | undefined,
+    author_id: p.author_id as string | undefined,
+    topic_id: p.topic_id as string | undefined,
+    tags: (Array.isArray(p.tags) ? p.tags : []) as string[],
+    media: (Array.isArray(media) ? media : []) as unknown as BlogPost['media'],
+    bookmark_count: (p.bookmark_count ?? 0) as number,
+    comment_count: (p.comment_count ?? 0) as number,
+    upvote_count: (p.upvote_count ?? 0) as number,
+    downvote_count: (p.downvote_count ?? 0) as number,
+    view_count: (p.view_count ?? 0) as number,
+    read_time: (p.read_time ?? 0) as number,
+    status: p.status as BlogPost['status'],
+    created_at: p.created_at as string | undefined,
+    updated_at: p.updated_at as string | undefined,
+    published_at: p.published_at as string | undefined,
+    cover_image_url: (p.cover_image_url ?? firstMediaUrl) as string | undefined,
+    visibility: p.visibility as BlogPost['visibility'],
   }
 }
 
-function normalizeListResponse(raw: any, params?: BlogListParams): BlogListResponse {
-  const topLevel = raw || {}
-  const data = unwrap<any>(raw)
+function normalizeComment(raw: unknown): BlogComment {
+  const comment =
+    raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : ({} as Record<string, unknown>)
+  return {
+    id: comment.id as string,
+    author_id: comment.author_id as string | undefined,
+    post_id: comment.post_id as string | undefined,
+    content: comment.content as string | undefined,
+    created_at: comment.created_at as string | undefined,
+    updated_at: comment.updated_at as string | undefined,
+    deleted_at: comment.deleted_at as string | undefined,
+    parent_id: comment.parent_id as string | undefined,
+    root_parent_id: comment.root_parent_id as string | undefined,
+    depth: comment.depth as number | undefined,
+    timestamp_seconds: comment.timestamp_seconds as number | undefined,
+    audio: (comment.audio ?? comment.audio_attachment) as BlogComment['audio'],
+  }
+}
 
-  const posts = (data?.posts ??
-    data?.data?.posts ??
-    data?.items ??
-    data?.results ??
-    data?.data ??
-    topLevel?.data ??
-    []) as any[]
+function normalizeListResponse(raw: unknown, params?: BlogListParams): BlogListResponse {
+  const topLevel = (raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}) as Record<string, unknown>
+  const data = unwrap<unknown>(raw)
+  const dataObj = (data && typeof data === 'object' ? (data as Record<string, unknown>) : {}) as Record<string, unknown>
+
+  const nestedData =
+    dataObj.data && typeof dataObj.data === 'object' ? (dataObj.data as Record<string, unknown>) : undefined
+
+  const posts = (dataObj.posts ??
+    nestedData?.posts ??
+    dataObj.items ??
+    dataObj.results ??
+    dataObj.data ??
+    topLevel.data ??
+    []) as unknown[]
   const total =
-    (data?.total ??
-      data?.data?.total ??
-      data?.pagination?.total_items ??
-      data?.pagination?.total ??
+    (dataObj.total ??
+      nestedData?.total ??
+      (dataObj.pagination && typeof dataObj.pagination === 'object'
+        ? (dataObj.pagination as Record<string, unknown>).total_items ??
+          (dataObj.pagination as Record<string, unknown>).total
+        : undefined) ??
       posts.length) as number
 
   return {
@@ -172,8 +215,12 @@ export const blogService = {
     })
     const mergedPosts = Array.from(mergedById.values())
 
+    const authorFiltered = p.author_id
+    ? mergedPosts.filter((post) => post.author_id === p.author_id)
+    : mergedPosts
+
     const keyword = (p.search || p.q || '').trim().toLowerCase()
-    const filtered = mergedPosts.filter((post) => {
+    const filtered = authorFiltered.filter((post) => {
       if (p.status && String(post.status || '').toLowerCase() !== p.status.toLowerCase()) return false
       if (!keyword) return true
       const searchTarget = [post.title, post.slug, post.short_description, post.brief_description]
@@ -195,7 +242,7 @@ export const blogService = {
     try {
       // Nhiều backend vẫn hỗ trợ route này cho owner draft.
       const byId = await axiosClient.get(`/blogs/${id}`)
-      const normalized = normalizePost(unwrap<any>(byId.data))
+      const normalized = normalizePost(unwrap<unknown>(byId.data))
       upsertDraftCache(normalized)
       return normalized
     } catch {
@@ -215,7 +262,38 @@ export const blogService = {
 
   getPostBySlug: async (slug: string): Promise<BlogPost> => {
     const res = await axiosClient.get(`/blogs/slug/${encodeURIComponent(slug)}`)
-    return normalizePost(unwrap<any>(res.data))
+    return normalizePost(unwrap<unknown>(res.data))
+  },
+
+  getComments: async (id: string): Promise<BlogComment[]> => {
+    const res = await axiosClient.get(`/blogs/${id}/comments`)
+    const data = unwrap<unknown>(res.data)
+    const obj = data && typeof data === 'object' ? (data as Record<string, unknown>) : undefined
+    const items = (obj?.data ?? obj?.comments ?? data ?? []) as unknown
+    return Array.isArray(items) ? items.map(normalizeComment) : []
+  },
+
+  createComment: async (id: string, payload: CreateBlogCommentPayload): Promise<BlogComment> => {
+    const res = await axiosClient.post(`/blogs/${id}/comments`, payload)
+    const data = unwrap<unknown>(res.data)
+    const obj = data && typeof data === 'object' ? (data as Record<string, unknown>) : undefined
+    const created = obj?.data ?? obj?.comment ?? data
+    return normalizeComment(created)
+  },
+
+  updateComment: async (commentId: string, payload: { content: string }): Promise<BlogComment> => {
+    const res = await axiosClient.put(`/comments/${commentId}`, payload)
+    const data = unwrap<unknown>(res.data)
+    const obj = data && typeof data === 'object' ? (data as Record<string, unknown>) : undefined
+    const updated = obj?.data ?? obj?.comment ?? data
+    return normalizeComment(updated)
+  },
+
+  deleteComment: async (commentId: string): Promise<{ id?: string; message?: string } & Record<string, unknown>> => {
+    const res = await axiosClient.delete(`/comments/${commentId}`)
+    const payload = unwrap<unknown>(res.data)
+    if (payload && typeof payload === 'object') return payload as { id?: string; message?: string } & Record<string, unknown>
+    return { id: typeof payload === 'string' ? payload : undefined }
   },
 
   createPost: async (payload: CreateBlogPostRequest): Promise<BlogPost> => {
@@ -226,7 +304,7 @@ export const blogService = {
       tags: payload.tags,
       topic_id: payload.topic_id,
     })
-    const created = normalizePost(unwrap<any>(res.data))
+    const created = normalizePost(unwrap<unknown>(res.data))
     upsertDraftCache(created)
     return created
   },
@@ -238,7 +316,7 @@ export const blogService = {
       tags: payload.tags,
       topic_id: payload.topic_id,
     })
-    const updated = normalizePost(unwrap<any>(res.data))
+    const updated = normalizePost(unwrap<unknown>(res.data))
     upsertDraftCache(updated)
     return updated
   },
@@ -251,7 +329,7 @@ export const blogService = {
   uploadMedia: async (
     id: string,
     file: File,
-  ): Promise<{ url?: string; file_url?: string; post?: BlogPost } & Record<string, any>> => {
+  ): Promise<{ url?: string; file_url?: string; post?: BlogPost } & Record<string, unknown>> => {
     const uploaded = await userService.uploadMedia(file)
     const uploadedUrl = uploaded?.file_url
     if (!uploadedUrl) {
@@ -263,24 +341,31 @@ export const blogService = {
       media_type: inferMediaType(file.name || uploadedUrl),
     })
 
-    const attachedPost = normalizePost(unwrap<any>(attachRes.data))
+    const attachedPost = normalizePost(unwrap<unknown>(attachRes.data))
     upsertDraftCache(attachedPost)
     return { url: uploadedUrl, file_url: uploadedUrl, post: attachedPost, raw: attachRes.data }
   },
 
   publish: async (id: string): Promise<BlogPost> => {
     const res = await axiosClient.patch(`/blogs/${id}/publish`)
-    const published = normalizePost(unwrap<any>(res.data))
+    const published = normalizePost(unwrap<unknown>(res.data))
     upsertDraftCache(published)
     return published
   },
 
   getVersions: async (id: string): Promise<BlogVersionsResponse> => {
     const res = await axiosClient.get(`/blogs/${id}/versions`)
-    const data = unwrap<any>(res.data)
+    const data = unwrap<unknown>(res.data)
+    const obj = data && typeof data === 'object' ? (data as Record<string, unknown>) : undefined
     return {
-      versions: data?.versions ?? data?.data?.versions ?? data ?? [],
-      total: data?.total ?? data?.data?.total,
+      versions: (obj?.versions ??
+        (obj?.data && typeof obj.data === 'object' ? (obj.data as Record<string, unknown>).versions : undefined) ??
+        data ??
+        []) as BlogVersionsResponse['versions'],
+      total: (obj?.total ??
+        (obj?.data && typeof obj.data === 'object' ? (obj.data as Record<string, unknown>).total : undefined)) as
+        | number
+        | undefined,
     }
   },
 
@@ -295,8 +380,9 @@ export const blogService = {
     for (const endpoint of ['/bookmarks', '/blogs/bookmarks']) {
       try {
         const res = await axiosClient.get(endpoint, { params })
-        const data = unwrap<any>(res.data)
-        const items = Array.isArray(data) ? data : data?.data ?? []
+        const data = unwrap<unknown>(res.data)
+        const obj = data && typeof data === 'object' ? (data as Record<string, unknown>) : undefined
+        const items = (Array.isArray(data) ? data : (obj?.data ?? [])) as unknown
         return Array.isArray(items) ? items.map(normalizePost) : []
       } catch (error) {
         lastError = error
@@ -326,6 +412,17 @@ export const blogService = {
 
   getBookmarkLists: async (): Promise<BookmarkListItem[]> => {
     return readBookmarkListsCache()
+  },
+
+  votePost: async (id: string, voteType: string): Promise<BlogPost> => {
+    const vote_type = normalizeVoteType(voteType)
+    const res = await axiosClient.post(`/blogs/${id}/vote`, { vote_type })
+    return normalizePost(unwrap<unknown>(res.data))
+  },
+
+  removeVote: async (id: string): Promise<BlogPost> => {
+    const res = await axiosClient.delete(`/blogs/${id}/vote`)
+    return normalizePost(unwrap<unknown>(res.data))
   },
 }
 

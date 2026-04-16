@@ -37,6 +37,34 @@ export interface BlogPost {
   visibility?: 'public' | 'private' | 'unlisted' | string
 }
 
+export interface BlogCommentAudio {
+  url?: string
+  duration_seconds?: number
+  marker_seconds?: number
+}
+
+export interface BlogComment {
+  id: string
+  author_id?: string
+  post_id?: string
+  content?: string
+  created_at?: string
+  updated_at?: string
+  deleted_at?: string
+  parent_id?: string
+  root_parent_id?: string
+  depth?: number
+  timestamp_seconds?: number
+  audio?: BlogCommentAudio
+}
+
+export interface CreateBlogCommentPayload {
+  content: string
+  parent_id?: string
+  timestamp_seconds?: number
+  audio_attachment?: BlogCommentAudio
+}
+
 export interface BlogListParams {
   limit?: number
   offset?: number
@@ -48,6 +76,7 @@ export interface BlogListParams {
   tag_id?: string
   topic_id?: string
   sort_by?: string
+  author_id?: string
   sort_order?: 'asc' | 'desc'
 }
 

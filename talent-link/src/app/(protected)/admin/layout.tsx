@@ -19,6 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const t = useTranslations('Admin')
   const pathname = usePathname()
   const { user } = useAuthStore()
+  const isAdmin = user?.role?.toLowerCase() === 'admin'
 
   useEffect(() => {
     // Check if user is admin
@@ -28,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [user, router])
 
   // Don't render if not admin
-  if (!user || user.role !== 'admin') {
+  if (!user || !isAdmin) {
     return (
       <div className="min-h-[70vh] w-full relative flex items-center justify-center">
         <div

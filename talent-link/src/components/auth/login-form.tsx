@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { FieldSeparator } from '@/components/ui/field'
@@ -21,6 +22,7 @@ type LogInFormValues = {
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'form'>) {
   const t = useTranslations('Auth.login')
+  const router = useRouter()
 
   const loginSchema = z.object({
     identifier: z.string().min(1, t('emailInvalid')),
@@ -36,6 +38,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
   const onSubmit = async (data: LogInFormValues) => {
     const { identifier, password } = data
     await login(identifier, password)
+    const currentUser = useAuthStore.getState().user
+    const normalizedRole = currentUser?.role?.toLowerCase()
+
+    if (normalizedRole === 'admin') {
+      router.replace('/admin')
+      return
+    }
+
+    router.replace(currentUser?.username ? `/profile/${currentUser.username}` : '/')
     // try {
     //   await login(identifier, password)
     //   navigate('/users/dashboard')

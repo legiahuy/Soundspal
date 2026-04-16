@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
@@ -34,6 +33,7 @@ const Header = () => {
   const pathname = usePathname()
   const t = useTranslations('Header')
   const [isOpen, setIsOpen] = useState(false)
+  const isAdmin = user?.role?.toLowerCase() === 'admin'
 
   const navigationItems = [
     { href: '/', label: t('navigation.home') },
@@ -258,10 +258,16 @@ const Header = () => {
                         <span>{t('userMenu.settings')}</span>
                       </Link>
                     </DropdownMenuItem>
-                    {user?.role === 'admin' && <DropdownMenuItem asChild>
+                    {isAdmin && <DropdownMenuItem asChild>
                       <Link href={'/admin'} className="flex items-center cursor-pointer">
                         <ShieldUser className="mr-2 h-4 w-4" />
                         <span>{t('userMenu.adminDashboard')}</span>
+                      </Link>
+                    </DropdownMenuItem>}
+                    {!isAdmin && <DropdownMenuItem asChild>
+                      <Link href={'/blogs/manage'} className="flex items-center cursor-pointer">
+                        <ShieldUser className="mr-2 h-4 w-4" />
+                        <span>{t('userMenu.BlogsManage')}</span>
                       </Link>
                     </DropdownMenuItem>}
 
