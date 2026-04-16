@@ -6,12 +6,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   ArrowLeft,
+  BookMarked,
   Calendar,
   Loader2,
   ThumbsDown,
   ThumbsUp,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 import { blogService } from '@/services/blogService'
 import { userService } from '@/services/userService'
@@ -59,6 +61,8 @@ export default function BlogDetailPage() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null)
   const [userById, setUserById] = useState<Record<string, User>>({})
+  const [bookmarking, setBookmarking] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
   const { isAuthenticated, user } = useAuth()
   const userId = user?.id
   const username = user?.username
@@ -93,6 +97,24 @@ export default function BlogDetailPage() {
       active = false
     }
   }, [slug, t])
+
+  useEffect(() => {
+    let active = true
+    const loadBookmarkState = async () => {
+      if (!isAuthenticated || !post?.id) return
+      try {
+        const items = await blogService.getBookmarks()
+        if (!active) return
+        setIsBookmarked(items.some((p) => p.id === post.id))
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    loadBookmarkState()
+    return () => {
+      active = false
+    }
+  }, [isAuthenticated, post?.id])
 
   useEffect(() => {
     let active = true
@@ -177,6 +199,29 @@ export default function BlogDetailPage() {
   const shortDesc = post.short_description || post.brief_description
   const content = post.content || ''
   const hasHtmlContent = /<\/?[a-z][\s\S]*>/i.test(content)
+
+  const handleBookmark = async () => {
+    if (!post?.id) return
+    if (!isAuthenticated) {
+      router.push('/auth/login')
+      return
+    }
+    if (isBookmarked) {
+      toast.message('Bài viết đã được lưu')
+      return
+    }
+    try {
+      setBookmarking(true)
+      await blogService.bookmarkPost(post.id)
+      setIsBookmarked(true)
+      toast.success('Đã lưu bài viết vào bookmarks')
+    } catch (e) {
+      console.error(e)
+      toast.error('Lưu bookmark thất bại')
+    } finally {
+      setBookmarking(false)
+    }
+  }
 
   const handleVote = async (voteType: 'like' | 'dislike') => {
     if (!post?.id) return
@@ -541,6 +586,19 @@ export default function BlogDetailPage() {
             <span>{post.read_time ?? 12} min read</span>
             <span>{post.upvote_count ?? 0} upvotes</span>
             <span>{post.comment_count ?? 0} comments</span>
+            <button
+              type="button"
+              className="ml-auto inline-flex items-center gap-2 rounded-full border border-[#E7E7E7] bg-white px-3 py-1.5 text-xs text-[#475569] hover:bg-[#F8F9FA] disabled:opacity-50"
+              onClick={handleBookmark}
+              disabled={bookmarking}
+              aria-label="Bookmark post"
+            >
+              <BookMarked
+                className={isBookmarked ? 'h-4 w-4 text-[#7D3BED]' : 'h-4 w-4 text-[#64748B]'}
+                fill={isBookmarked ? 'currentColor' : 'none'}
+              />
+              {isBookmarked ? 'Saved' : 'Save'}
+            </button>
           </div>
 
           <div className="mb-6 flex flex-wrap items-center gap-3">
