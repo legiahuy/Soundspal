@@ -76,7 +76,21 @@
     "commentEmpty": "Comment content cannot be empty",
     "commentError": "Could not post comment. Please try again.",
     "deleteConfirm": "Are you sure you want to delete this comment?",
-    "authorInfo": "Design Lead at Linear Systems"
+    "authorInfo": "Design Lead at Linear Systems",
+    "loginRequired": "You need to log in to write a comment.",
+    "loginNow": "Log in now",
+    "loadingComments": "Loading comments...",
+    "noComments": "No comments yet. Be the first to comment.",
+    "aboutAuthor": "About the author",
+    "onThisPage": "On this page",
+    "relatedArticles": "Related articles",
+    "viewProfile": "View Profile",
+    "minRead": "{minutes} min read",
+    "bookmark": {
+      "add": "Post bookmarked",
+      "remove": "Post unbookmarked",
+      "error": "Action failed"
+    }
   },
   "BlogEditor": {
     "createNew": "Create New Post",

@@ -101,7 +101,7 @@ export default async function HelpPage() {
         <div className="absolute bottom-0 left-1/4 w-[600px] h-[400px] bg-primary/10 blur-[130px] rounded-full" />
       </div>
 
-      <div className="relative z-10 container mx-auto max-w-[860px] px-4 py-24">
+      <div className="relative z-10 contai``ner mx-auto max-w-[860px] px-4 py-24">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 pb-2 bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
             {t('title')}

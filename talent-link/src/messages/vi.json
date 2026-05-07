@@ -76,7 +76,21 @@
     "commentEmpty": "Nội dung bình luận không được để trống",
     "commentError": "Không thể gửi bình luận. Vui lòng thử lại.",
     "deleteConfirm": "Bạn có chắc muốn xóa bình luận này?",
-    "authorInfo": "Trưởng bộ phận Thiết kế tại Linear Systems"
+    "authorInfo": "Trưởng bộ phận Thiết kế tại Linear Systems",
+    "loginRequired": "Bạn cần đăng nhập để viết bình luận.",
+    "loginNow": "Đăng nhập ngay",
+    "loadingComments": "Đang tải bình luận...",
+    "noComments": "Chưa có bình luận nào. Hãy là người đầu tiên bình luận.",
+    "aboutAuthor": "Về tác giả",
+    "onThisPage": "Trong bài viết này",
+    "relatedArticles": "Bài viết liên quan",
+    "viewProfile": "Xem hồ sơ",
+    "minRead": "{minutes} phút đọc",
+    "bookmark": {
+      "add": "Đã lưu bài viết",
+      "remove": "Đã bỏ lưu bài viết",
+      "error": "Thao tác thất bại"
+    }
   },
   "BlogEditor": {
     "createNew": "Tạo bài viết mới",
