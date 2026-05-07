@@ -23,14 +23,137 @@
   "BlogsPage": {
     "title": "Blogs",
     "subtitle": "Latest articles and updates",
-    "loading": "Loading blogs...",
+    "loading": "Loading articles...",
     "error": "Unable to load blogs right now.",
-    "empty": "No blog posts yet."
+    "empty": "No articles found in this collection.",
+    "exploreAll": "Explore all articles",
+    "tabs": {
+      "all": "All Articles",
+      "bookmarks": "Bookmark List"
+    },
+    "searchPlaceholder": "Search topics...",
+    "readMore": "Read",
+    "bookmark": {
+      "add": "Post bookmarked",
+      "remove": "Post unbookmarked",
+      "error": "Action failed",
+      "label": "Bookmark post"
+    },
+    "lists": {
+      "all": "All bookmarks",
+      "new": "New bookmark list name",
+      "create": "Create list",
+      "creating": "Creating...",
+      "success": "List created successfully",
+      "error": "Failed to create list"
+    }
   },
   "BlogDetail": {
     "back": "Back to blogs",
     "loading": "Loading post...",
-    "error": "Unable to load this post."
+    "error": "Unable to load this post.",
+    "readTime": "{minutes} min read",
+    "upvotes": "{count} upvotes",
+    "comments": "{count} comments",
+    "contentUpdating": "Content is being updated.",
+    "save": "Save",
+    "saved": "Saved",
+    "like": "Like",
+    "dislike": "Dislike",
+    "writeComment": "Write a comment...",
+    "postComment": "Post Comment",
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "saveComment": "Save",
+    "viewAllComments": "View all comments ({count})",
+    "collapse": "Collapse",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+    "sending": "Sending...",
+    "replyTo": "Reply to {name}...",
+    "commentEmpty": "Comment content cannot be empty",
+    "commentError": "Could not post comment. Please try again.",
+    "deleteConfirm": "Are you sure you want to delete this comment?",
+    "authorInfo": "Design Lead at Linear Systems"
+  },
+  "BlogEditor": {
+    "createNew": "Create New Post",
+    "editPost": "Edit Post",
+    "subtitle": "Refine the content and settings for your post",
+    "save": "Save Article",
+    "saveDraft": "Save Draft",
+    "saveUpdate": "Save Update",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "back": "Back",
+    "sections": {
+      "main": {
+        "title": "Main Content",
+        "description": "Start with a catchy title and detailed content.",
+        "labelTitle": "Post Title",
+        "placeholderTitle": "Enter an impressive title...",
+        "labelShortDesc": "Short Description",
+        "placeholderShortDesc": "A brief summary of the post's main content...",
+        "labelContent": "Detailed Content",
+        "placeholderContent": "Start writing your story..."
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "Classification and keywords to make the post easier to find.",
+        "labelTopic": "Topic (Topic ID)",
+        "placeholderTopic": "e.g., engineering, music...",
+        "labelTags": "Keywords (Tags)",
+        "placeholderTags": "Enter tag and press Enter...",
+        "add": "Add",
+        "tagExists": "Tag already exists"
+      },
+      "media": {
+        "title": "Cover Image",
+        "description": "The background image displayed on the post list.",
+        "hint": "Choose a background image for the post",
+        "change": "Change image",
+        "uploadError": "Failed to upload cover image"
+      }
+    },
+    "messages": {
+      "validationError": "Please fill in all information (minimum content of 20 characters).",
+      "createSuccess": "Post created successfully",
+      "createError": "Failed to create post",
+      "updateSuccess": "Post updated successfully",
+      "updateError": "Failed to update post",
+      "imageInserted": "Image inserted. Note: Large images may slow down the saving process.",
+      "loadingEditor": "Loading editor content...",
+      "notFound": "Post not found",
+      "notFoundDesc": "This post may have been deleted or you do not have access.",
+      "backToManage": "Back to management",
+      "newDraft": "New Draft",
+      "editingPost": "Editing post content",
+      "preview": "Preview",
+      "published": "Published",
+      "publish": "Publish",
+      "publishSuccess": "Post published successfully",
+      "publishError": "Failed to publish post",
+      "uploadSuccess": "Image uploaded successfully",
+      "uploadError": "Failed to upload image"
+    },
+    "tabs": {
+      "content": "Content",
+      "settings": "Settings",
+      "history": "History"
+    },
+    "history": {
+      "title": "Version History",
+      "description": "Track the changes you've made.",
+      "update": "Update history",
+      "loading": "Loading history...",
+      "empty": "No version history yet.",
+      "autoSave": "Auto-save",
+      "version": "Version {num}",
+      "view": "View",
+      "error": "Could not load version history"
+    }
   },
   "Settings": {
     "profile": {

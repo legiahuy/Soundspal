@@ -25,12 +25,135 @@
     "subtitle": "Bài viết mới nhất và cập nhật",
     "loading": "Đang tải bài viết...",
     "error": "Hiện không thể tải blog.",
-    "empty": "Chưa có bài viết nào."
+    "empty": "Chưa có bài viết nào trong danh sách này.",
+    "exploreAll": "Khám phá tất cả bài viết",
+    "tabs": {
+      "all": "Tất cả bài viết",
+      "bookmarks": "Danh sách đã lưu"
+    },
+    "searchPlaceholder": "Tìm kiếm chủ đề...",
+    "readMore": "Đọc tiếp",
+    "bookmark": {
+      "add": "Đã lưu bài viết",
+      "remove": "Đã bỏ lưu bài viết",
+      "error": "Thao tác thất bại",
+      "label": "Lưu bài viết"
+    },
+    "lists": {
+      "all": "Tất cả bookmark",
+      "new": "Tên bookmark list mới",
+      "create": "Tạo list",
+      "creating": "Đang tạo...",
+      "success": "Tạo list thành công",
+      "error": "Tạo list thất bại"
+    }
   },
   "BlogDetail": {
     "back": "Quay lại blog",
     "loading": "Đang tải bài viết...",
-    "error": "Không thể tải bài viết này."
+    "error": "Không thể tải bài viết này.",
+    "readTime": "{minutes} phút đọc",
+    "upvotes": "{count} lượt thích",
+    "comments": "{count} bình luận",
+    "contentUpdating": "Nội dung đang được cập nhật.",
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "like": "Thích",
+    "dislike": "Không thích",
+    "writeComment": "Viết bình luận của bạn...",
+    "postComment": "Gửi bình luận",
+    "reply": "Trả lời",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "cancel": "Hủy",
+    "saveComment": "Lưu",
+    "viewAllComments": "Xem tất cả bình luận ({count})",
+    "collapse": "Thu gọn",
+    "deleting": "Đang xóa...",
+    "saving": "Đang lưu...",
+    "sending": "Đang gửi...",
+    "replyTo": "Viết trả lời cho {name}...",
+    "commentEmpty": "Nội dung bình luận không được để trống",
+    "commentError": "Không thể gửi bình luận. Vui lòng thử lại.",
+    "deleteConfirm": "Bạn có chắc muốn xóa bình luận này?",
+    "authorInfo": "Trưởng bộ phận Thiết kế tại Linear Systems"
+  },
+  "BlogEditor": {
+    "createNew": "Tạo bài viết mới",
+    "editPost": "Chỉnh sửa bài viết",
+    "subtitle": "Hoàn thiện nội dung và cài đặt cho bài viết của bạn",
+    "save": "Lưu bài viết",
+    "saveDraft": "Lưu bản nháp",
+    "saveUpdate": "Lưu cập nhật",
+    "saving": "Đang lưu...",
+    "cancel": "Hủy",
+    "back": "Quay lại",
+    "sections": {
+      "main": {
+        "title": "Nội dung chính",
+        "description": "Bắt đầu với một tiêu đề thu hút và nội dung chi tiết.",
+        "labelTitle": "Tiêu đề bài viết",
+        "placeholderTitle": "Nhập tiêu đề ấn tượng...",
+        "labelShortDesc": "Mô tả ngắn",
+        "placeholderShortDesc": "Tóm tắt ngắn gọn nội dung bài viết...",
+        "labelContent": "Nội dung chi tiết",
+        "placeholderContent": "Hãy bắt đầu viết câu chuyện của bạn..."
+      },
+      "settings": {
+        "title": "Cài đặt",
+        "description": "Phân loại và từ khóa để bài viết dễ tìm thấy hơn.",
+        "labelTopic": "Chủ đề (Topic ID)",
+        "placeholderTopic": "Ví dụ: engineering, music...",
+        "labelTags": "Từ khóa (Tags)",
+        "placeholderTags": "Nhập tag rồi bấm Enter...",
+        "add": "Thêm",
+        "tagExists": "Tag đã tồn tại"
+      },
+      "media": {
+        "title": "Ảnh bìa",
+        "description": "Ảnh nền hiển thị trên danh sách bài viết.",
+        "hint": "Chọn ảnh nền bài viết",
+        "change": "Thay đổi ảnh",
+        "uploadError": "Upload ảnh cover thất bại"
+      }
+    },
+    "messages": {
+      "validationError": "Vui lòng điền đủ thông tin (nội dung tối thiểu 20 ký tự).",
+      "createSuccess": "Tạo bài viết thành công",
+      "createError": "Tạo bài viết thất bại",
+      "updateSuccess": "Cập nhật bài viết thành công",
+      "updateError": "Cập nhật bài viết thất bại",
+      "imageInserted": "Ảnh đã được chèn. Lưu ý: Ảnh dung lượng lớn có thể làm chậm quá trình lưu.",
+      "loadingEditor": "Đang tải nội dung biên tập...",
+      "notFound": "Không tìm thấy bài viết",
+      "notFoundDesc": "Có thể bài viết này đã bị xóa hoặc bạn không có quyền truy cập.",
+      "backToManage": "Quay lại quản lý",
+      "newDraft": "Bản nháp mới",
+      "editingPost": "Biên tập nội dung bài viết",
+      "preview": "Xem thử",
+      "published": "Đã xuất bản",
+      "publish": "Xuất bản",
+      "publishSuccess": "Đã xuất bản bài viết",
+      "publishError": "Xuất bản thất bại",
+      "uploadSuccess": "Upload ảnh thành công",
+      "uploadError": "Upload ảnh thất bại"
+    },
+    "tabs": {
+      "content": "Nội dung",
+      "settings": "Cài đặt",
+      "history": "Lịch sử"
+    },
+    "history": {
+      "title": "Lịch sử phiên bản",
+      "description": "Theo dõi các thay đổi đã thực hiện.",
+      "update": "Cập nhật lịch sử",
+      "loading": "Đang tải lịch sử...",
+      "empty": "Chưa có lịch sử phiên bản nào.",
+      "autoSave": "Tự động lưu",
+      "version": "Phiên bản {num}",
+      "view": "Xem lại",
+      "error": "Không thể tải lịch sử phiên bản"
+    }
   },
   "Settings": {
     "profile": {

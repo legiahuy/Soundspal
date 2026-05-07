@@ -87,6 +87,32 @@ export interface BlogListResponse {
   offset?: number
 }
 
+export interface BlogSearchParams {
+  q?: string
+  topic_id?: string
+  sort?: string
+  'tag_ids[]'?: string[]
+  page?: number
+  page_size?: number
+}
+
+export interface BlogSearchResponse {
+  data: {
+    items: BlogPost[]
+    meta: {
+      page: number
+      page_size: number
+      total: number
+    }
+  }
+  message: string
+}
+
+export interface BlogDetailResponse {
+  data: BlogPost
+  message: string
+}
+
 export interface CreateBlogPostRequest {
   title: string
   content: string

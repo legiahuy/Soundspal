@@ -4,6 +4,8 @@ import type {
   BlogComment,
   BlogListParams,
   BlogListResponse,
+  BlogSearchParams,
+  BlogSearchResponse,
   BlogPost,
   BlogVersionsResponse,
   BookmarkItem,
@@ -179,7 +181,7 @@ function normalizeListResponse(raw: unknown, params?: BlogListParams): BlogListR
       nestedData?.total ??
       (dataObj.pagination && typeof dataObj.pagination === 'object'
         ? (dataObj.pagination as Record<string, unknown>).total_items ??
-          (dataObj.pagination as Record<string, unknown>).total
+        (dataObj.pagination as Record<string, unknown>).total
         : undefined) ??
       posts.length) as number
 
@@ -216,8 +218,8 @@ export const blogService = {
     const mergedPosts = Array.from(mergedById.values())
 
     const authorFiltered = p.author_id
-    ? mergedPosts.filter((post) => post.author_id === p.author_id)
-    : mergedPosts
+      ? mergedPosts.filter((post) => post.author_id === p.author_id)
+      : mergedPosts
 
     const keyword = (p.search || p.q || '').trim().toLowerCase()
     const filtered = authorFiltered.filter((post) => {
@@ -235,33 +237,28 @@ export const blogService = {
     return { posts: filtered.slice(offset, offset + limit), total: filtered.length, limit, offset }
   },
 
+  searchBlogs: async (params: BlogSearchParams): Promise<BlogSearchResponse> => {
+    const res = await axiosClient.get('/blogs/search', { params })
+    const payload = res.data as BlogSearchResponse
+    // Normalize items if needed, but assuming the API returns standard BlogPost structure
+    if (payload?.data?.items) {
+      payload.data.items = payload.data.items.map(normalizePost)
+    }
+    return payload
+  },
+
   getPostById: async (id: string): Promise<BlogPost> => {
     const cached = getDraftFromCache(id)
     if (cached) return cached
 
-    try {
-      // Nhiều backend vẫn hỗ trợ route này cho owner draft.
-      const byId = await axiosClient.get(`/blogs/${id}`)
-      const normalized = normalizePost(unwrap<unknown>(byId.data))
-      upsertDraftCache(normalized)
-      return normalized
-    } catch {
-      // fallback
-    }
-
-    const res = await axiosClient.get('/blogs')
-    const list = normalizeListResponse(res.data).posts
-    const matched = list.find((post) => post.id === id)
-    if (matched) {
-      upsertDraftCache(matched)
-      return matched
-    }
-
-    throw new Error('Không tìm thấy bài viết theo id')
+    const res = await axiosClient.get(`/blogs/${id}`)
+    const normalized = normalizePost(unwrap<unknown>(res.data))
+    upsertDraftCache(normalized)
+    return normalized
   },
 
   getPostBySlug: async (slug: string): Promise<BlogPost> => {
-    const res = await axiosClient.get(`/blogs/slug/${encodeURIComponent(slug)}`)
+    const res = await axiosClient.get(`/blogs/${encodeURIComponent(slug)}`)
     return normalizePost(unwrap<unknown>(res.data))
   },
 
@@ -372,6 +369,10 @@ export const blogService = {
   bookmarkPost: async (id: string, payload?: BookmarkPayload): Promise<BookmarkItem> => {
     const res = await axiosClient.post(`/blogs/${id}/bookmark`, payload || {})
     return unwrap<BookmarkItem>(res.data)
+  },
+
+  unbookmarkPost: async (id: string, payload?: BookmarkPayload): Promise<void> => {
+    await axiosClient.delete(`/blogs/${id}/bookmark`, { data: payload || {} })
   },
 
   getBookmarks: async (listId?: string): Promise<BlogPost[]> => {

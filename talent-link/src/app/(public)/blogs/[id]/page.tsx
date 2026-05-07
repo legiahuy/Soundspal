@@ -9,8 +9,10 @@ import {
   BookMarked,
   Calendar,
   Loader2,
+  MessageSquare,
   ThumbsDown,
   ThumbsUp,
+  XCircle,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
@@ -33,11 +35,13 @@ function formatDate(value?: string) {
   return d.toLocaleDateString()
 }
 
+import 'react-quill-new/dist/quill.snow.css'
+
 export default function BlogDetailPage() {
   const t = useTranslations('BlogDetail')
-  const params = useParams<{ slug: string }>()
+  const params = useParams<{ id: string }>()
   const router = useRouter()
-  const slug = params?.slug ?? ''
+  const id = params?.id ?? ''
 
   const [post, setPost] = useState<BlogPost | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,25 +67,36 @@ export default function BlogDetailPage() {
   const [userById, setUserById] = useState<Record<string, User>>({})
   const [bookmarking, setBookmarking] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([])
+  const [loadingRelated, setLoadingRelated] = useState(false)
   const { isAuthenticated, user } = useAuth()
   const userId = user?.id
   const username = user?.username
 
   const displayNameForUserId = (id?: string) => {
     if (!id) return 'Người dùng'
-    if (id === userId) return user?.display_name || user?.username || 'Bạn'
-    const u = userById[id]
-    return u?.display_name || u?.username || id
+    const currentUser = user as any
+    if (id === userId) return currentUser?.display_name || currentUser?.displayName || currentUser?.username || 'Bạn'
+    const u = userById[id] as any
+    return u?.display_name || u?.displayName || u?.username || id
+  }
+
+  const avatarUrlForUserId = (id?: string) => {
+    if (!id) return ''
+    const currentUser = user as any
+    if (id === userId) return currentUser?.avatar_url || currentUser?.avatarUrl || ''
+    const u = userById[id] as any
+    return u?.avatar_url || u?.avatarUrl || ''
   }
 
   useEffect(() => {
     let active = true
     const run = async () => {
-      if (!slug) return
+      if (!id) return
       try {
         setLoading(true)
         setError(null)
-        const data = await blogService.getPostBySlug(slug)
+        const data = await blogService.getPostById(id)
         if (!active) return
         setPost(data)
       } catch (e) {
@@ -96,7 +111,7 @@ export default function BlogDetailPage() {
     return () => {
       active = false
     }
-  }, [slug, t])
+  }, [id, t])
 
   useEffect(() => {
     let active = true
@@ -105,7 +120,7 @@ export default function BlogDetailPage() {
       try {
         const items = await blogService.getBookmarks()
         if (!active) return
-        setIsBookmarked(items.some((p) => p.id === post.id))
+        setIsBookmarked(items.some((p: BlogPost) => p.id === post.id))
       } catch (e) {
         console.error(e)
       }
@@ -131,7 +146,7 @@ export default function BlogDetailPage() {
           new Set(
             [post.author_id, ...data.map((c) => c.author_id)]
               .filter(Boolean)
-              .map((v) => String(v)),
+              .map((v: unknown) => String(v)),
           ),
         )
         const missing = authorIds.filter((id) => !userById[id] && id !== userId)
@@ -169,12 +184,43 @@ export default function BlogDetailPage() {
     }
   }, [post?.id, userId, userById, post?.author_id])
 
+  useEffect(() => {
+    let active = true
+    const loadRelated = async () => {
+      if (!post?.id || !post?.tags || post.tags.length === 0) return
+      try {
+        setLoadingRelated(true)
+        // Lấy tag đầu tiên để tìm bài liên quan (hoặc có thể cải tiến lấy nhiều hơn)
+        const firstTag = post.tags[0]
+        const res = await blogService.listPosts({
+          tag_id: firstTag,
+          limit: 4,
+          status: 'published'
+        })
+        if (!active) return
+        // Lọc bỏ bài hiện tại
+        const filtered = res.posts.filter(p => p.id !== post.id)
+        setRelatedPosts(filtered.slice(0, 3))
+      } catch (e) {
+        console.error('Failed to load related posts:', e)
+      } finally {
+        if (active) setLoadingRelated(false)
+      }
+    }
+    loadRelated()
+    return () => {
+      active = false
+    }
+  }, [post?.id, post?.tags])
+
   if (loading) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>{t('loading')}</span>
+      <div className="flex min-h-screen items-center justify-center bg-white pt-24">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm font-medium text-muted-foreground animate-pulse">
+            {t('loading')}
+          </p>
         </div>
       </div>
     )
@@ -182,15 +228,19 @@ export default function BlogDetailPage() {
 
   if (error || !post) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4">
-        <Card className="w-full max-w-xl border-border/50 bg-card/70 backdrop-blur-sm">
-          <CardContent className="p-8 text-center">
-            <p className="text-destructive font-medium mb-4">{error || t('error')}</p>
-            <Button variant="outline" asChild>
-              <Link href="/blogs">{t('back')}</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex min-h-screen items-center justify-center bg-white px-4 pt-24">
+        <div className="text-center">
+          <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <XCircle className="h-10 w-10" />
+          </div>
+          <h2 className="mb-2 text-2xl font-bold text-gray-900">
+            {t('error')}
+          </h2>
+          <p className="mb-8 text-gray-500">{error || 'Article not found'}</p>
+          <Button asChild className="rounded-full px-8" variant="outline">
+            <Link href="/blogs">{t('back')}</Link>
+          </Button>
+        </div>
       </div>
     )
   }
@@ -201,23 +251,25 @@ export default function BlogDetailPage() {
   const hasHtmlContent = /<\/?[a-z][\s\S]*>/i.test(content)
 
   const handleBookmark = async () => {
-    if (!post?.id) return
+    if (!post?.id || bookmarking) return
     if (!isAuthenticated) {
       router.push('/auth/login')
       return
     }
-    if (isBookmarked) {
-      toast.message('Bài viết đã được lưu')
-      return
-    }
     try {
       setBookmarking(true)
-      await blogService.bookmarkPost(post.id)
-      setIsBookmarked(true)
-      toast.success('Đã lưu bài viết vào bookmarks')
+      if (isBookmarked) {
+        await blogService.unbookmarkPost(post.id)
+        setIsBookmarked(false)
+        toast.success(t('bookmark.remove'))
+      } else {
+        await blogService.bookmarkPost(post.id)
+        setIsBookmarked(true)
+        toast.success(t('bookmark.add'))
+      }
     } catch (e) {
       console.error(e)
-      toast.error('Lưu bookmark thất bại')
+      toast.error(t('bookmark.error'))
     } finally {
       setBookmarking(false)
     }
@@ -235,7 +287,7 @@ export default function BlogDetailPage() {
       const isTogglingOff = myVote === voteType
 
       setMyVote(isTogglingOff ? null : voteType)
-      setPost((current) => {
+      setPost((current: BlogPost | null) => {
         if (!current) return current
         const up = current.upvote_count ?? 0
         const down = current.downvote_count ?? 0
@@ -266,7 +318,7 @@ export default function BlogDetailPage() {
       setPost(updated)
     } catch (e) {
       console.error(e)
-      setVoteError('Không thể vote. Vui lòng thử lại.')
+      setVoteError(t('commentError'))
     } finally {
       setVoting(null)
     }
@@ -278,7 +330,7 @@ export default function BlogDetailPage() {
 
     const contentValue = commentValue.trim()
     if (!contentValue) {
-      setCommentError('Nội dung bình luận không được để trống')
+      setCommentError(t('commentEmpty'))
       return
     }
 
@@ -293,7 +345,7 @@ export default function BlogDetailPage() {
       setPost({ ...post, comment_count: (post.comment_count ?? 0) + 1 })
     } catch (e) {
       console.error(e)
-      setCommentError('Không thể gửi bình luận. Vui lòng thử lại.')
+      setCommentError(t('commentError'))
     } finally {
       setPostingComment(false)
     }
@@ -323,7 +375,7 @@ export default function BlogDetailPage() {
   const handleSaveEdit = async (commentId: string) => {
     const nextValue = editValue.trim()
     if (!nextValue) {
-      setEditError('Nội dung bình luận không được để trống')
+      setEditError(t('commentEmpty'))
       return
     }
     try {
@@ -335,7 +387,7 @@ export default function BlogDetailPage() {
       setEditValue('')
     } catch (e) {
       console.error(e)
-      setEditError('Không thể cập nhật bình luận. Vui lòng thử lại.')
+      setEditError(t('commentError'))
     } finally {
       setSavingEdit(false)
     }
@@ -343,21 +395,21 @@ export default function BlogDetailPage() {
 
   const handleDeleteComment = async (commentId: string) => {
     if (!post?.id) return
-    const ok = window.confirm('Bạn có chắc muốn xóa bình luận này?')
+    const ok = window.confirm(t('deleteConfirm'))
     if (!ok) return
     try {
       setDeletingCommentId(commentId)
       await blogService.deleteComment(commentId)
       const fresh = await blogService.getComments(post.id)
       setComments(fresh)
-      setPost((current) =>
+      setPost((current: BlogPost | null) =>
         current ? { ...current, comment_count: fresh.length } : current,
       )
       if (editingCommentId === commentId) handleCancelEdit()
       if (replyTarget?.id === commentId) setReplyTarget(null)
     } catch (e) {
       console.error(e)
-      setCommentError('Không thể xóa bình luận. Vui lòng thử lại.')
+      setCommentError(t('commentError'))
     } finally {
       setDeletingCommentId(null)
     }
@@ -380,7 +432,7 @@ export default function BlogDetailPage() {
 
     const contentValue = replyValue.trim()
     if (!contentValue) {
-      setReplyError('Nội dung bình luận không được để trống')
+      setReplyError(t('commentEmpty'))
       return
     }
 
@@ -397,7 +449,7 @@ export default function BlogDetailPage() {
       setPost({ ...post, comment_count: (post.comment_count ?? 0) + 1 })
     } catch (e) {
       console.error(e)
-      setReplyError('Không thể gửi bình luận. Vui lòng thử lại.')
+      setReplyError(t('commentError'))
     } finally {
       setPostingReply(false)
     }
@@ -422,8 +474,8 @@ export default function BlogDetailPage() {
       >
         <Textarea
           value={replyValue}
-          onChange={(event) => setReplyValue(event.target.value)}
-          placeholder={`Viết trả lời cho ${targetComment.author_id || 'Người dùng'}...`}
+          onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setReplyValue(event.target.value)}
+          placeholder={t('replyTo', { name: targetComment.author_id || 'User' })}
           className="min-h-[88px] bg-white"
           autoFocus
         />
@@ -439,10 +491,10 @@ export default function BlogDetailPage() {
             }}
             className="rounded-full"
           >
-            Hủy
+            {t('cancel')}
           </Button>
           <Button type="submit" disabled={postingReply} className="rounded-full">
-            {postingReply ? 'Đang gửi...' : 'Gửi trả lời'}
+            {postingReply ? t('sending') : t('reply')}
           </Button>
         </div>
       </form>
@@ -464,24 +516,44 @@ export default function BlogDetailPage() {
           key={comment.id}
           className={`rounded-2xl border border-[#E7E7E7] bg-white p-4 ${level > 0 ? 'ml-6 border-l-4 border-[#7D3BED]/20' : ''}`}
         >
-          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <span className="font-medium text-[#1E1E1E]">{displayNameForUserId(comment.author_id)}</span>
-            {comment.created_at && (
-              <span className="text-xs text-[#64748B]">{formatDate(comment.created_at)}</span>
-            )}
+          <div className="mb-3 flex items-center gap-3">
+            <div className="relative h-9 w-9 shrink-0 rounded-full overflow-hidden bg-[#F1F5F9] border border-[#E7E7E7]">
+              {avatarUrlForUserId(comment.author_id) ? (
+                <Image
+                  src={resolveMediaUrl(avatarUrlForUserId(comment.author_id))}
+                  alt={displayNameForUserId(comment.author_id)}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-[#1E1E1E] text-xs font-medium text-white">
+                  {displayNameForUserId(comment.author_id).charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="flex flex-1 flex-col min-w-0 gap-0.5">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <span className="font-medium text-[#1E1E1E] truncate">
+                  {displayNameForUserId(comment.author_id)}
+                </span>
+                {comment.created_at && (
+                  <span className="text-[10px] text-[#64748B]">{formatDate(comment.created_at)}</span>
+                )}
+              </div>
+            </div>
           </div>
           {isEditing ? (
             <div className="space-y-3">
               <Textarea
                 value={editValue}
-                onChange={(event) => setEditValue(event.target.value)}
+                onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setEditValue(event.target.value)}
                 className="min-h-[96px] bg-white"
                 autoFocus
               />
               {editError && <p className="text-sm text-destructive">{editError}</p>}
               <div className="flex items-center justify-end gap-3">
                 <Button type="button" variant="outline" className="rounded-full" onClick={handleCancelEdit}>
-                  Hủy
+                  {t('cancel')}
                 </Button>
                 <Button
                   type="button"
@@ -489,7 +561,7 @@ export default function BlogDetailPage() {
                   disabled={savingEdit}
                   onClick={() => handleSaveEdit(comment.id)}
                 >
-                  {savingEdit ? 'Đang lưu...' : 'Lưu'}
+                  {savingEdit ? t('saving') : t('saveComment')}
                 </Button>
               </div>
             </div>
@@ -515,7 +587,7 @@ export default function BlogDetailPage() {
                     onClick={() => handleEditClick(comment)}
                     disabled={deletingCommentId !== null}
                   >
-                    Sửa
+                    {t('edit')}
                   </button>
                 )}
                 {canDelete && (
@@ -525,7 +597,7 @@ export default function BlogDetailPage() {
                     onClick={() => handleDeleteComment(comment.id)}
                     disabled={deletingCommentId === comment.id || savingEdit}
                   >
-                    {deletingCommentId === comment.id ? 'Đang xóa...' : 'Xóa'}
+                    {deletingCommentId === comment.id ? t('deleting') : t('delete')}
                   </button>
                 )}
               </div>
@@ -536,7 +608,7 @@ export default function BlogDetailPage() {
                 className="text-sm text-[#475569] hover:text-[#1E1E1E]"
                 onClick={() => toggleReplies(comment.id)}
               >
-                {areRepliesCollapsed ? `Xem tất cả bình luận (${totalReplyCount})` : 'Thu gọn'}
+                {areRepliesCollapsed ? t('viewAllComments', { count: totalReplyCount }) : t('collapse')}
               </button>
             )}
           </div>
@@ -555,7 +627,7 @@ export default function BlogDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFFFF] pb-12">
-      <section className="border-b border-[#E7E7E7] pt-24 pb-8">
+      <section className="pt-24 pb-8">
         <div className="mx-auto w-full max-w-[1200px] px-4 md:px-6">
           <Button variant="ghost" onClick={() => router.back()} className="-ml-2 mb-6">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -580,24 +652,30 @@ export default function BlogDetailPage() {
 
           <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] text-[#1E1E1E] mb-6">{post.title}</h1>
 
-          {shortDesc && <p className="text-[#64748B] text-lg leading-relaxed mb-6">{shortDesc}</p>}
+          {shortDesc && <p className="text-[#64748B] text-lg leading-relaxed mb-8">{shortDesc}</p>}
+
+          {cover && (
+            <div className="relative w-full aspect-video md:aspect-[21/9] rounded-3xl overflow-hidden bg-[#F8F9FA] mb-10 shadow-sm">
+              <Image src={cover} alt={post.title} fill className="object-cover" priority />
+            </div>
+          )}
 
           <div className="mb-6 flex items-center gap-4 border-b border-[#E7E7E7] pb-3 text-xs text-[#64748B]">
-            <span>{post.read_time ?? 12} min read</span>
-            <span>{post.upvote_count ?? 0} upvotes</span>
-            <span>{post.comment_count ?? 0} comments</span>
+            <span>{t('readTime', { minutes: post.read_time ?? 12 })}</span>
+            <span>{t('upvotes', { count: post.upvote_count ?? 0 })}</span>
+            <span>{t('comments', { count: post.comment_count ?? 0 })}</span>
             <button
               type="button"
               className="ml-auto inline-flex items-center gap-2 rounded-full border border-[#E7E7E7] bg-white px-3 py-1.5 text-xs text-[#475569] hover:bg-[#F8F9FA] disabled:opacity-50"
               onClick={handleBookmark}
               disabled={bookmarking}
-              aria-label="Bookmark post"
+              aria-label={t('save')}
             >
               <BookMarked
                 className={isBookmarked ? 'h-4 w-4 text-[#7D3BED]' : 'h-4 w-4 text-[#64748B]'}
                 fill={isBookmarked ? 'currentColor' : 'none'}
               />
-              {isBookmarked ? 'Saved' : 'Save'}
+              {isBookmarked ? t('saved') : t('save')}
             </button>
           </div>
 
@@ -610,7 +688,7 @@ export default function BlogDetailPage() {
               onClick={() => handleVote('like')}
             >
               <ThumbsUp className="h-4 w-4 mr-2" />
-              Like ({post.upvote_count ?? 0})
+              {t('like')} ({post.upvote_count ?? 0})
             </Button>
             <Button
               type="button"
@@ -620,42 +698,118 @@ export default function BlogDetailPage() {
               onClick={() => handleVote('dislike')}
             >
               <ThumbsDown className="h-4 w-4 mr-2" />
-              Dislike ({post.downvote_count ?? 0})
+              {t('dislike')} ({post.downvote_count ?? 0})
             </Button>
             {voteError && <span className="text-sm text-destructive">{voteError}</span>}
           </div>
 
           <div className="mb-6 flex items-center gap-4 rounded-2xl border border-[#E7E7E7] px-4 py-3">
             <div className="flex items-center gap-4 text-xs text-[#64748B]">
-              <div className="h-10 w-10 rounded-full bg-[#1E1E1E] text-white text-sm flex items-center justify-center">
-                {displayNameForUserId(post.author_id).charAt(0).toUpperCase()}
+              <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden bg-[#F1F5F9] border border-[#E7E7E7]">
+                {avatarUrlForUserId(post.author_id) ? (
+                  <Image
+                    src={resolveMediaUrl(avatarUrlForUserId(post.author_id))}
+                    alt={displayNameForUserId(post.author_id)}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-[#1E1E1E] text-sm font-medium text-white">
+                    {displayNameForUserId(post.author_id).charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-[#1E1E1E]">{displayNameForUserId(post.author_id)}</p>
-                <p className="text-xs text-[#64748B]">Design Lead at Linear Systems</p>
+                <p className="text-xs text-[#64748B]">{t('authorInfo')}</p>
               </div>
             </div>
           </div>
 
-          {cover && (
-            <div className="relative w-full h-72 md:h-[300px] rounded-2xl overflow-hidden bg-[#F8F9FA] mb-3">
-              <Image src={cover} alt={post.title} fill className="object-cover" />
-            </div>
-          )}
 
-          <article className="max-w-none">
+          <article className="max-w-none w-full break-words overflow-visible">
             {content ? (
-              <div className="text-[#1E1E1E] leading-8 text-[16px] font-normal">
-                {hasHtmlContent ? (
-                  <div className="prose prose-neutral max-w-none prose-headings:text-[#1E1E1E] prose-p:text-[#1E1E1E] prose-blockquote:border-[#7D3BED] prose-blockquote:text-[#5b21b6]">
+              <div className="blog-content-renderer">
+                <div className="ql-editor !p-0 !overflow-visible !h-auto">
+                  {hasHtmlContent ? (
                     <div dangerouslySetInnerHTML={{ __html: content }} />
-                  </div>
-                ) : (
-                  <pre className="whitespace-pre-wrap font-sans leading-8">{content}</pre>
-                )}
+                  ) : (
+                    <pre className="whitespace-pre-wrap font-sans leading-relaxed text-[17px] break-words">{content}</pre>
+                  )}
+                </div>
+                <style jsx global>{`
+                  .blog-content-renderer {
+                    font-family: inherit;
+                    color: #1E1E1E;
+                    line-height: 1.8;
+                  }
+                  
+                  /* Core Formatting */
+                  .ql-editor {
+                    padding: 0 !important;
+                    height: auto !important;
+                    font-size: 1.1rem;
+                    line-height: 1.8;
+                    color: #1E1E1E;
+                  }
+                  .ql-editor p {
+                    margin-bottom: 1.5rem;
+                  }
+                  .ql-editor h1, .ql-editor h2, .ql-editor h3 {
+                    color: #1E1E1E;
+                    font-weight: 700;
+                    line-height: 1.3;
+                    margin-top: 2.5rem;
+                    margin-bottom: 1.25rem;
+                  }
+                  .ql-editor h1 { font-size: 2.25rem; }
+                  .ql-editor h2 { font-size: 1.875rem; }
+                  .ql-editor h3 { font-size: 1.5rem; }
+                  
+                  /* Lists */
+                  .ql-editor ul, .ql-editor ol {
+                    margin-left: 0;
+                    padding-left: 1.5rem;
+                    margin-bottom: 1.5rem;
+                  }
+                  .ql-editor ul { list-style-type: disc; }
+                  .ql-editor ol { list-style-type: decimal; }
+                  .ql-editor li {
+                    margin-bottom: 0.5rem;
+                    padding-left: 0.5rem;
+                  }
+                  
+                  /* Alignments */
+                  .ql-align-center { text-align: center; }
+                  .ql-align-right { text-align: right; }
+                  .ql-align-justify { text-align: justify; }
+                  
+                  /* Images & Media */
+                  .ql-editor img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 1rem;
+                    margin: 2.5rem 0;
+                    display: block;
+                  }
+                  
+                  /* Blockquotes */
+                  .ql-editor blockquote {
+                    border-left: 4px solid #7D3BED;
+                    padding-left: 1.5rem;
+                    margin: 2rem 0;
+                    font-style: italic;
+                    color: #475569;
+                  }
+                  
+                  /* Indentation */
+                  .ql-indent-1 { padding-left: 3rem; }
+                  .ql-indent-2 { padding-left: 6rem; }
+                  .ql-indent-3 { padding-left: 9rem; }
+                `}</style>
               </div>
             ) : (
-              <p className="text-muted-foreground">Nội dung đang được cập nhật.</p>
+              <p className="text-muted-foreground italic">{t('contentUpdating')}</p>
             )}
           </article>
 
@@ -664,8 +818,8 @@ export default function BlogDetailPage() {
               <CardContent className="p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-semibold text-[#1E1E1E]">Bình luận</h2>
-                    <p className="text-sm text-[#64748B]">{comments.length} bình luận</p>
+                    <h2 className="text-xl font-semibold text-[#1E1E1E]">{t('reply')}</h2>
+                    <p className="text-sm text-[#64748B]">{t('comments', { count: comments.length })}</p>
                   </div>
                 </div>
 
@@ -673,16 +827,16 @@ export default function BlogDetailPage() {
                   <form onSubmit={handleSubmitComment} className="space-y-3">
                     <Textarea
                       value={commentValue}
-                      onChange={(event) => setCommentValue(event.target.value)}
-                      placeholder="Viết bình luận của bạn..."
+                      onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setCommentValue(event.target.value)}
+                      placeholder={t('writeComment')}
                       className="min-h-[120px]"
                     />
                     {commentError && <p className="text-sm text-destructive">{commentError}</p>}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <Button type="submit" disabled={postingComment} className="rounded-full">
-                        {postingComment ? 'Đang gửi...' : 'Gửi bình luận'}
+                        {postingComment ? t('sending') : t('postComment')}
                       </Button>
-                      {loadingComments && <span className="text-sm text-[#64748B]">Đang tải bình luận...</span>}
+                      {loadingComments && <span className="text-sm text-[#64748B]">{t('loading')}</span>}
                     </div>
                   </form>
                 ) : (
@@ -714,8 +868,19 @@ export default function BlogDetailPage() {
               <CardContent className="p-4">
                 <h3 className="text-xs text-[#64748B] uppercase mb-3">About the author</h3>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="h-12 w-12 rounded-full bg-[#1E1E1E] text-white flex items-center justify-center">
-                    {displayNameForUserId(post.author_id).charAt(0).toUpperCase()}
+                  <div className="relative h-12 w-12 shrink-0 rounded-full overflow-hidden bg-[#F1F5F9] border border-[#E7E7E7]">
+                    {avatarUrlForUserId(post.author_id) ? (
+                      <Image
+                        src={resolveMediaUrl(avatarUrlForUserId(post.author_id))}
+                        alt={displayNameForUserId(post.author_id)}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-[#1E1E1E] text-white text-base font-medium">
+                        {displayNameForUserId(post.author_id).charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-[#1E1E1E]">{displayNameForUserId(post.author_id)}</p>
@@ -726,24 +891,33 @@ export default function BlogDetailPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#F8F9FA] border-0 rounded-2xl">
-              <CardContent className="p-4">
-                <h3 className="text-xs text-[#64748B] uppercase mb-3">Related articles</h3>
-                <div className="space-y-3">
-                  {[post, post, post].slice(0, 3).map((p, idx) => (
-                    <Link key={`${p.id}-${idx}`} href={`/blogs/${p.slug}`} className="flex gap-2 group">
-                      <div className="relative h-12 w-12 rounded-lg overflow-hidden">
-                        <Image src={resolveMediaUrl(p.cover_image_url || '/images/job/default-job.jpg')} alt={p.title} fill className="object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-[#1E1E1E] line-clamp-2 group-hover:text-[#7D3BED]">{p.title}</p>
-                        <p className="text-[10px] text-[#64748B] mt-1">{p.read_time ?? 5} min read</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {relatedPosts.length > 0 && (
+              <Card className="bg-[#F8F9FA] border-0 rounded-2xl">
+                <CardContent className="p-4">
+                  <h3 className="text-xs text-[#64748B] uppercase mb-3">Related articles</h3>
+                  <div className="space-y-3">
+                    {relatedPosts.map((p) => (
+                      <Link key={p.id} href={`/blogs/${p.id}`} className="flex gap-2 group">
+                        <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-muted">
+                          <Image
+                            src={resolveMediaUrl(p.cover_image_url || '/images/job/default-job.jpg')}
+                            alt={p.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs text-[#1E1E1E] line-clamp-2 group-hover:text-[#7D3BED]">
+                            {p.title}
+                          </p>
+                          <p className="text-[10px] text-[#64748B] mt-1">{p.read_time ?? 5} min read</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </aside>
       </div>
